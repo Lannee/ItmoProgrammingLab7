@@ -10,6 +10,8 @@ import src.Server;
 import src.logic.data.Receiver;
 
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.regex.MatchResult;
 import java.util.regex.Pattern;
 
@@ -125,7 +127,7 @@ public class Invoker {
         }
     }
 
-    public String parseRequest(Request request) {
+    public synchronized String parseRequest(Request request) {
         return executeClientCommand(request.getCommandName(), request.getArgumentsToCommand());
     }
 

@@ -123,6 +123,7 @@ public class DatagramConnection implements IConnection {
                     packagesAmount = packet.getPackagesAmount();
                     packets = new Packet[packagesAmount];
 
+                    // Needed to parallel
                     if (isListeningPort && (clientHost == null || clientPort == null)) {
                         clientHost = packetHost;
                         clientPort = packetPort;

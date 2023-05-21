@@ -16,6 +16,10 @@ import org.slf4j.LoggerFactory;
 
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.util.List;
+import java.util.Vector;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class Server {
     private final static int SERVER_PORT = 50689;
@@ -30,6 +34,8 @@ public class Server {
 
     private Invoker invoker;
     private static final Logger logger = LoggerFactory.getLogger(Server.class);
+
+    private ExecutorService executorService = Executors.newCachedThreadPool();
 
     public void start(String[] args) {
 
@@ -74,15 +80,15 @@ public class Server {
 
             switch (request.getTypeOfRequest()) {
                 case COMMAND, CONFIRMATION -> {
-                    response = new CommandResponse(invoker.parseRequest(request));
+                    executorService.submit(() -> connection.send(new CommandResponse(invoker.parseRequest(request))));
                 }
                 case INITIALIZATION -> {
                     response = new CommandsDescriptionResponse(invoker.getCommandsDescriptions());
+                    connection.send(response);
                 }
             }
 
             logger.info("Response Obj created.");
-            connection.send(response);
             logger.info("Response sent.");
         }
     }
