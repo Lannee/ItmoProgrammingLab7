@@ -14,7 +14,8 @@ import java.util.function.Predicate;
  * Responsible for performing various actions on the collection
  */
 public class Receiver {
-    private final DataManager<Dragon> collection = new CSVFileDataManager<>(Dragon.class);
+//    private final DataManager<Dragon> collection = new CSVFileDataManager<>(Dragon.class);
+    private final DataManager<Dragon> collection = new DBDataManager("jdbc:postgresql://localhost:5432/postgres");
 
     public Receiver(String filePath) {
         collection.initialize(filePath);

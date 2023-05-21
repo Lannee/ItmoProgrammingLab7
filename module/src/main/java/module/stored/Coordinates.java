@@ -12,6 +12,9 @@ import java.io.Serializable;
  * One of the stored objects
  */
 public class Coordinates implements Comparable<Coordinates>, Serializable {
+
+    private static final long serialVersionUID = 5629745098267755290L;
+
     @Fillable
     @Storable
     @Restriction(filter = ValidationMode.TOP_NUMERIC_BOUND, value = 955)
@@ -21,6 +24,14 @@ public class Coordinates implements Comparable<Coordinates>, Serializable {
     @Restriction(filter = ValidationMode.TOP_NUMERIC_BOUND, value = 207)
     private Integer y; //Максимальное значение поля: 207, Поле не может быть null
 
+
+    public void setX(long x) {
+        this.x = x;
+    }
+
+    public void setY(Integer y) {
+        this.y = y;
+    }
 
     @Override
     public int compareTo(Coordinates o) {

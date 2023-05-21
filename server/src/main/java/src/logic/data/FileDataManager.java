@@ -13,6 +13,7 @@ import java.util.function.Consumer;
  * DataManager implementation for representation storage as a file
  * @param <T> - Stored type
  */
+@Deprecated
 public abstract class FileDataManager<T extends Comparable<? super T>> implements DataManager<T> {
 
     protected final List<T> collection = new LinkedList<>();

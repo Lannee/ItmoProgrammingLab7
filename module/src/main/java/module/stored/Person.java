@@ -4,12 +4,16 @@ import module.annotations.*;
 import module.utils.ObjectUtils;
 
 import java.io.Serializable;
+import java.util.Date;
 import java.util.Objects;
 
 /**
  * One of the stored objects
  */
 public class Person implements Comparable<Person>, Serializable {
+
+    private static final long serialVersionUID = 6529685098267755290L;
+
     @Fillable
     @Storable
     private String name; //Поле не может быть null, Строка не может быть пустой
@@ -33,6 +37,26 @@ public class Person implements Comparable<Person>, Serializable {
     @Fillable
     @Storable
     private Color hairColor; //Поле может быть null
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setBirthday(Date birthday) {
+        this.birthday = birthday;
+    }
+
+    public void setHeight(float height) {
+        this.height = height;
+    }
+
+    public void setPassportID(String passportID) {
+        this.passportID = passportID;
+    }
+
+    public void setHairColor(Color hairColor) {
+        this.hairColor = hairColor;
+    }
 
     @Override
     public int compareTo(Person o) {

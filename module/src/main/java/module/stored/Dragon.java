@@ -13,6 +13,8 @@ import java.util.UUID;
  */
 public class Dragon implements Comparable<Dragon>, Serializable {
 
+    private static final long serialVersionUID = 7489624371065743284L;
+
     private static long instances = 0;
 
     @Storable
@@ -72,6 +74,42 @@ public class Dragon implements Comparable<Dragon>, Serializable {
             return compare;
         else
             return ObjectUtils.saveCompare(killer, o.killer);
+    }
+
+    public void setId(long id) {
+        this.id = id;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setCoordinates(Coordinates coordinates) {
+        this.coordinates = coordinates;
+    }
+
+    public void setCreationDate(ZonedDateTime creationDate) {
+        this.creationDate = creationDate;
+    }
+
+    public void setAge(Long age) {
+        this.age = age;
+    }
+
+    public void setWingspan(Long wingspan) {
+        this.wingspan = wingspan;
+    }
+
+    public void setWeight(float weight) {
+        this.weight = weight;
+    }
+
+    public void setColor(Color color) {
+        this.color = color;
+    }
+
+    public void setKiller(Person killer) {
+        this.killer = killer;
     }
 
     @Override

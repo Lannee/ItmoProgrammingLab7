@@ -24,6 +24,7 @@ import java.util.*;
  * Specific implementation of FileDataManager as a CSV file storage
  * @param <T> - Stored type
  */
+@Deprecated
 public class CSVFileDataManager<T extends Comparable<? super T>> extends FileDataManager<T> {
     private static final Logger logger = LoggerFactory.getLogger(CSVFileDataManager.class);
 
@@ -35,8 +36,8 @@ public class CSVFileDataManager<T extends Comparable<? super T>> extends FileDat
     }
 
     @Override
-    public void initialize(String filePath) {
-        File csvFile = new File(filePath);
+    public void initialize(String path) {
+        File csvFile = new File(path);
 
         List<String[]> csvContent;
         String[] headers;

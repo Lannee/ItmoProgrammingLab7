@@ -1,6 +1,5 @@
 package src.logic.data;
 
-import java.io.IOException;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
@@ -67,9 +66,10 @@ public interface DataManager<T extends Comparable<? super T>> {
 
     /**
      * Initialize collection from specified source
-     * @param filePath
+     *
+     * @param path
      */
-    void initialize(String filePath);
+    void initialize(String path);
 
     /**
      * Saves changes in the collection to the storage
