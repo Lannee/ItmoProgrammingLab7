@@ -33,6 +33,14 @@ public class Coordinates implements Comparable<Coordinates>, Serializable {
         this.y = y;
     }
 
+    public long getX() {
+        return x;
+    }
+
+    public Integer getY() {
+        return y;
+    }
+
     @Override
     public int compareTo(Coordinates o) {
         int compare;

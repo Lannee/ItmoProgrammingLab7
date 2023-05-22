@@ -27,7 +27,7 @@ create table Dragon (
     wingspan integer check ( wingspan > 0),
     weight numeric(1000, 3) check ( weight > 0) not null,
     color integer references Color on delete set default default 0 not null,
-    killer integer references Person on delete set default default 0
+    killer integer references Person on delete set null
 );
 
 SELECT d.id, d.name, cr.x, cr.y, d.creationDate, d.age, d.wingspan, d.weight, cl1.color, p.name, p.birthday, p.height, p.passportID, cl2.color

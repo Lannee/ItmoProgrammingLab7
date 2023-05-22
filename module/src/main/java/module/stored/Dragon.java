@@ -112,6 +112,38 @@ public class Dragon implements Comparable<Dragon>, Serializable {
         this.killer = killer;
     }
 
+    public String getName() {
+        return name;
+    }
+
+    public Coordinates getCoordinates() {
+        return coordinates;
+    }
+
+    public ZonedDateTime getCreationDate() {
+        return creationDate;
+    }
+
+    public Long getAge() {
+        return age;
+    }
+
+    public Long getWingspan() {
+        return wingspan;
+    }
+
+    public float getWeight() {
+        return weight;
+    }
+
+    public Color getColor() {
+        return color;
+    }
+
+    public Person getKiller() {
+        return killer;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

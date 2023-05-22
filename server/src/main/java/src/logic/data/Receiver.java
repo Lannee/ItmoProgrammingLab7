@@ -15,7 +15,7 @@ import java.util.function.Predicate;
  */
 public class Receiver {
 //    private final DataManager<Dragon> collection = new CSVFileDataManager<>(Dragon.class);
-    private final DataManager<Dragon> collection = new DBDataManager("jdbc:postgresql://localhost:5432/postgres");
+    private final DataManager<Dragon> collection = new DBDataManager("jdbc:postgresql://localhost:5432/studs");
 
     public Receiver(String filePath) {
         collection.initialize(filePath);

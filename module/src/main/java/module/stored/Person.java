@@ -58,6 +58,26 @@ public class Person implements Comparable<Person>, Serializable {
         this.hairColor = hairColor;
     }
 
+    public String getName() {
+        return name;
+    }
+
+    public Date getBirthday() {
+        return birthday;
+    }
+
+    public float getHeight() {
+        return height;
+    }
+
+    public String getPassportID() {
+        return passportID;
+    }
+
+    public Color getHairColor() {
+        return hairColor;
+    }
+
     @Override
     public int compareTo(Person o) {
         int compare;
