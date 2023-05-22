@@ -70,7 +70,7 @@ public class Invoker {
         files.clear();
     }
 
-    public String commandsInfo() {
+    public synchronized String commandsInfo() {
         StringBuilder out = new StringBuilder();
         declaredClientCommands.forEach((key, value) -> {
             out.append(key);
@@ -101,7 +101,7 @@ public class Invoker {
         return out.toString();
     }
 
-    public String parseCommand(String line) {
+    public synchronized String parseCommand(String line) {
         line = line.trim();
         if(line.equals("")) return "";
 

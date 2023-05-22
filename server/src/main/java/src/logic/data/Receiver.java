@@ -21,11 +21,11 @@ public class Receiver {
         collection.initialize(filePath);
     }
 
-    public void add(Object obj) {
+    public synchronized void add(Object obj) {
         collection.add(getStoredType().cast(obj));
     }
 
-    public void add(Object obj, long id) {
+    public synchronized void add(Object obj, long id) {
         try {
             if (id <= 0)
                 throw new NumberFormatException("Incorrect argument value");
@@ -36,23 +36,23 @@ public class Receiver {
         } catch (NoSuchFieldException | IllegalArgumentException impossible) {}
     }
 
-    public void clear() {
+    public synchronized void clear() {
         collection.clear();
     }
 
-    public String getInfo() {
+    public synchronized String getInfo() {
         return collection.getInfo();
     }
 
-    public String getFormattedCollection(Comparator<Dragon> sorter) {
+    public synchronized String getFormattedCollection(Comparator<Dragon> sorter) {
         return Formatter.format(collection.getElements(sorter), collection.getClT());
     }
 
-    public String getFormattedCollection() {
+    public synchronized String getFormattedCollection() {
         return getFormattedCollection(Comparator.reverseOrder());
     }
 
-    public <T> Integer countCompareToValueByField(String fieldName, Comparable value, Comparator<Comparable<T>> comparator)
+    public synchronized <T> Integer countCompareToValueByField(String fieldName, Comparable value, Comparator<Comparable<T>> comparator)
             throws NumberFormatException, NoSuchFieldException {
         int counter = 0;
         Field field = collection.getClT().getDeclaredField(fieldName);
@@ -71,11 +71,11 @@ public class Receiver {
         return counter;
     }
 
-    public void saveCollection() {
+    public synchronized void saveCollection() {
         collection.save();
     }
 
-    public Dragon getElementByFieldValue(String fieldName, Object value)
+    public synchronized Dragon getElementByFieldValue(String fieldName, Object value)
             throws NumberFormatException, NoSuchFieldException {
 
         Field idField;
@@ -93,20 +93,20 @@ public class Receiver {
         return null;
     }
 
-    public Dragon getElementByIndex(int index) {
+    public synchronized Dragon getElementByIndex(int index) {
         return collection.get(index);
     }
 
-    public int collectionSize() {
+    public synchronized int collectionSize() {
         return collection.size();
     }
 
-    public boolean removeFromCollection(Object o) {
+    public synchronized boolean removeFromCollection(Object o) {
         return collection.remove(o);
     }
 
     // Needed to be fixed.
-    public String removeOn(Predicate<Dragon> filter, boolean showRemoved) {
+    public synchronized String removeOn(Predicate<Dragon> filter, boolean showRemoved) {
         if (collection.size() == 0) {
             return "Cannot remove since the collection is empty";
         }
@@ -126,7 +126,7 @@ public class Receiver {
         return "";
     }
 
-    public String removeByIndex(int index, boolean showRemoved) {
+    public synchronized String removeByIndex(int index, boolean showRemoved) {
         if (collection.size() == 0) {
             return "Cannot remove since the collection is empty";
         }

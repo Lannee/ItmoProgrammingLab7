@@ -7,7 +7,6 @@ import module.connection.responseModule.ResponseStatus;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
 
-
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.*;
@@ -18,7 +17,7 @@ public class DatagramConnection implements IConnection {
 
     public static final int PACKAGE_SIZE = Packet.PACKAGE_SIZE;
 
-//    private String host;
+    // private String host;
     private InetAddress host;
 
     private Integer port;
@@ -29,7 +28,6 @@ public class DatagramConnection implements IConnection {
     private boolean isListeningPort;
 
     private final DatagramSocket socket;
-    private static final Logger logger = LoggerFactory.getLogger(DatagramConnection.class);
 
     public DatagramConnection() throws SocketException, UnknownHostException {
         this(false);
@@ -50,13 +48,15 @@ public class DatagramConnection implements IConnection {
     public DatagramConnection(String host, int port) throws SocketException, UnknownHostException {
         this(host, port, false);
     }
-    public DatagramConnection(String host, int port, boolean isListeningPort) throws SocketException, UnknownHostException {
+
+    public DatagramConnection(String host, int port, boolean isListeningPort)
+            throws SocketException, UnknownHostException {
         try {
             this.host = InetAddress.getByName(host);
             this.port = port;
             this.isListeningPort = isListeningPort;
 
-            if(isListeningPort) {
+            if (isListeningPort) {
                 socket = new DatagramSocket(port);
             } else
                 socket = new DatagramSocket();
@@ -84,19 +84,17 @@ public class DatagramConnection implements IConnection {
     }
 
     @Override
-    public void send(Serializable object) {
+    public synchronized void send(Serializable object) {
         try {
-            if (clientPort != null || clientHost != null) {
-                Packet[] packets = PacketManager.split(object);
+            Packet[] packets = PacketManager.split(object);
 
-                for (Packet packet : packets) {
-                    DatagramPacket datagramPacket = new DatagramPacket(
-                            PacketManager.serialize(packet),
-                            PACKAGE_SIZE,
-                            clientHost,
-                            clientPort);
-                    socket.send(datagramPacket);
-                }
+            for (Packet packet : packets) {
+                DatagramPacket datagramPacket = new DatagramPacket(
+                        PacketManager.serialize(packet),
+                        PACKAGE_SIZE,
+                        clientHost,
+                        clientPort);
+                socket.send(datagramPacket);
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -104,7 +102,7 @@ public class DatagramConnection implements IConnection {
     }
 
     @Override
-    public Serializable receive() {
+    public synchronized Serializable receive() {
         Serializable object;
         try {
             Packet[] packets = new Packet[0];
@@ -119,24 +117,28 @@ public class DatagramConnection implements IConnection {
                 Integer packetPort = datagramPacket.getPort();
                 Packet packet = (Packet) PacketManager.deserialize(bytes);
 
-                if(counter == 0) {
+                if (counter == 0) {
                     packagesAmount = packet.getPackagesAmount();
                     packets = new Packet[packagesAmount];
 
                     // Needed to parallel
-                    if (isListeningPort && (clientHost == null || clientPort == null)) {
-                        clientHost = packetHost;
-                        clientPort = packetPort;
-                    } else if (!clientHost.equals(packetHost) || !clientPort.equals(packetPort)){
-                        send(new CommandResponse("", ResponseStatus.CONNECTION_REJECTED));
-                        return receive();
-                    }
+                    // if (isListeningPort && (clientHost == null || clientPort == null)) {
+                        // clientHost = packetHost;
+                        // clientPort = packetPort;
+                    // } else if (!clientHost.equals(packetHost) || !clientPort.equals(packetPort)) {
+                    //     send(new CommandResponse("", ResponseStatus.CONNECTION_REJECTED));
+                    //     return receive();
+                    // }
                 }
+                clientHost = packetHost;
+                clientPort = packetPort;
+                System.out.println(clientHost + " " + clientPort);
                 packets[counter] = packet;
 
             } while (++counter != packagesAmount);
 
             object = PacketManager.assemble(packets);
+            
 
         } catch (IOException io) {
             throw new RuntimeException(io);

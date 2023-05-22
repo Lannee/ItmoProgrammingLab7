@@ -18,6 +18,8 @@ import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.List;
 import java.util.Vector;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -35,13 +37,14 @@ public class Server {
     private Invoker invoker;
     private static final Logger logger = LoggerFactory.getLogger(Server.class);
 
-    private ExecutorService executorService = Executors.newCachedThreadPool();
+    private ExecutorService executorServiceForExecuting = Executors.newCachedThreadPool();
+    private ExecutorService executorServiceForReceiving = Executors.newFixedThreadPool(5);
 
     public void start(String[] args) {
 
         logger.info("Starting server.");
         String filePath = getFilePath(args);
-//        String filePath = getFilePath(new String[]{"FileJ"});
+        // String filePath = getFilePath(new String[]{"FileJ"});
 
         try {
             connection = new DatagramConnection(SERVER_PORT, true);
@@ -58,10 +61,10 @@ public class Server {
 
         new Thread(() -> {
             String line;
-            while(running) {
+            while (running) {
                 try {
-                    if(in.isBufferEmpty()) {
-                        if(invoker.getRecursionSize() != 0)
+                    if (in.isBufferEmpty()) {
+                        if (invoker.getRecursionSize() != 0)
                             invoker.clearRecursion();
                         out.print(invite + " ");
                     }
@@ -73,28 +76,41 @@ public class Server {
             }
         }).start();
 
-        while(running) {
-            Request request = (Request) connection.receive();
-            logger.info("Received request from client with command '{}' and arguments '{}'", request.getCommandName(), request.getArgumentsToCommand());
-            Response response = null;
+        while (running) {
+            Callable<Request> callableGetRequest = () -> {
+                return (Request) connection.receive();
+            };
+            Request request;
+            try {
+                request = executorServiceForReceiving.submit(callableGetRequest).get();
 
-            switch (request.getTypeOfRequest()) {
-                case COMMAND, CONFIRMATION -> {
-                    executorService.submit(() -> connection.send(new CommandResponse(invoker.parseRequest(request))));
+                // Request request = (Request) connection.receive();
+                // executorServiceForReceiving.submit(() -> {});
+                logger.info("Received request from client with command '{}' and arguments '{}'",
+                        request.getCommandName(), request.getArgumentsToCommand());
+
+                Response response = null;
+                switch (request.getTypeOfRequest()) {
+                    case COMMAND, CONFIRMATION -> {
+                        executorServiceForExecuting.submit(() -> {
+                            connection.send(new CommandResponse(invoker.parseRequest(request)));
+                            logger.info("Response sent.");
+                        });
+
+                    }
+                    case INITIALIZATION -> {
+                        response = new CommandsDescriptionResponse(invoker.getCommandsDescriptions());
+                        connection.send(response);
+                    }
                 }
-                case INITIALIZATION -> {
-                    response = new CommandsDescriptionResponse(invoker.getCommandsDescriptions());
-                    connection.send(response);
-                }
+            } catch (InterruptedException | ExecutionException e) {
+                e.printStackTrace();
             }
-
-            logger.info("Response Obj created.");
-            logger.info("Response sent.");
         }
     }
 
     public static String getFilePath(String[] args) {
-//        return "base.csv";
+        // return "base.csv";
 
         if (args.length == 0) {
             logger.error("Incorrect number of arguments.");
