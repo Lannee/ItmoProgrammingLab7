@@ -207,7 +207,19 @@ public class DBDataManager implements DataManager<Dragon> {
             if(killer_id != null) dragonStatement.setInt(7, killer_id);
             else dragonStatement.setNull(7, Types.INTEGER);
 
-            dragonStatement.executeUpdate();
+            if(dragonStatement.executeUpdate() > 0) {
+                PreparedStatement dragonCurrval = dbConnection.prepareStatement(currvalStatment);
+                dragonCurrval.setString(1, "dragon_id_seq");
+                ResultSet currval = dragonCurrval.executeQuery();
+                currval.next();
+                element.setId(currval.getInt(1));
+
+                collection.add(element);
+            } else {
+
+            }
+
+
 
         } catch (SQLException e) {
             e.printStackTrace();
