@@ -152,6 +152,9 @@ public class DBDataManager implements DataManager<Dragon> {
     @Override
     public void add(Dragon element) {
         try {
+            dbConnection.setAutoCommit(false);
+            Savepoint savepoint = dbConnection.setSavepoint();
+
             // creating coordinates
             Coordinates coordinates = element.getCoordinates();
             PreparedStatement coordinatesStatement = dbConnection.prepareStatement(coordnatesAddStatment);
@@ -163,7 +166,7 @@ public class DBDataManager implements DataManager<Dragon> {
             coordinateCurrval.setString(1, "coordinates_id_seq");
             ResultSet rs = coordinateCurrval.executeQuery();
             rs.next();
-            Integer coordinates_id = rs.getInt(1);
+            int coordinates_id = rs.getInt(1);
 
             // creating person
             Person killer = element.getKiller();
@@ -207,19 +210,23 @@ public class DBDataManager implements DataManager<Dragon> {
             if(killer_id != null) dragonStatement.setInt(7, killer_id);
             else dragonStatement.setNull(7, Types.INTEGER);
 
-            if(dragonStatement.executeUpdate() > 0) {
-                PreparedStatement dragonCurrval = dbConnection.prepareStatement(currvalStatment);
-                dragonCurrval.setString(1, "dragon_id_seq");
-                ResultSet currval = dragonCurrval.executeQuery();
-                currval.next();
-                element.setId(currval.getInt(1));
+            try {
+                if (dragonStatement.executeUpdate() > 0) {
+                    dbConnection.commit();
+                    PreparedStatement dragonCurrval = dbConnection.prepareStatement(currvalStatment);
+                    dragonCurrval.setString(1, "dragon_id_seq");
+                    ResultSet currval = dragonCurrval.executeQuery();
+                    currval.next();
+                    element.setId(currval.getInt(1));
 
-                collection.add(element);
-            } else {
-
+                    collection.add(element);
+                } else {
+                    dbConnection.rollback(savepoint);
+                }
+            } catch (SQLException e) {
+                dbConnection.rollback(savepoint);
+                throw new SQLException(e);
             }
-
-
 
         } catch (SQLException e) {
             e.printStackTrace();
