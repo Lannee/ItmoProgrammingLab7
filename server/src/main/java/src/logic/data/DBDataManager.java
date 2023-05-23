@@ -16,6 +16,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Consumer;
@@ -33,10 +34,10 @@ public class DBDataManager implements DataManager<Dragon> {
     private static final String initializationQuery = """
             SELECT d.id id, d.name name, cr.id coordinatesId, x, y, creationDate, age, wingspan, weight, cl1.color color, p.id killerId, p.name killerName, birthday, height, passportID, cl2.color heirColor
             FROM Dragon d
-                JOIN Coordinates cr on cr.id = d.coordinates
-                JOIN Color cl1 on cl1.id = d.color
-                JOIN Person p on p.id = d.killer
-                JOIN Color cl2 on p.heirColor = cl2.id
+                     JOIN Coordinates cr on cr.id = d.coordinates
+                     JOIN Color cl1 on cl1.id = d.color
+                     LEFT JOIN Person p on p.id = d.killer
+                     LEFT JOIN Color cl2 on p.heirColor = cl2.id
             ORDER BY age, d.name;
             """;
 
@@ -104,10 +105,11 @@ public class DBDataManager implements DataManager<Dragon> {
                 if(!rs.wasNull()) {
                     Person killer = new Person();
                     killer.setName(rs.getString("killerName"));
-                    killer.setBirthday(rs.getDate("birthday"));
+                    killer.setBirthday(rs.getObject("birthday", Date.class));
                     killer.setHeight(rs.getFloat("height"));
                     killer.setPassportID(rs.getString("passportId"));
-                    killer.setHairColor(Color.valueOf(rs.getString("heirColor")));
+                    String heirColor = rs.getString("heirColor");
+                    killer.setHairColor(heirColor != null ? Color.valueOf(heirColor) : null);
                     dragon.setKiller(killer);
                 }
 

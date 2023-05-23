@@ -30,14 +30,6 @@ create table Dragon (
     killer integer references Person on delete set null
 );
 
-SELECT d.id, d.name, cr.x, cr.y, d.creationDate, d.age, d.wingspan, d.weight, cl1.color, p.name, p.birthday, p.height, p.passportID, cl2.color
-FROM dragon d
-    JOIN coordinates cr on cr.id = d.coordinates
-    JOIN color cl1 on cl1.id = d.color
-    JOIN person p on p.id = d.killer
-    JOIN color cl2 on p.heirColor = cl2.id
-ORDER BY age, d.name;
-
 insert into color (color)
 values ('RED'),
        ('YELLOW'),
@@ -65,3 +57,11 @@ values (
         (select id from Color where color = 'RED'),
         (select id from Person where name = 'Egor' and passportID = 'ereteg241532')
        );
+
+SELECT d.id id, d.name name, cr.id coordinatesId, x, y, creationDate, age, wingspan, weight, cl1.color color, p.id killerId, p.name killerName, birthday, height, passportID, cl2.color heirColor
+FROM Dragon d
+         JOIN Coordinates cr on cr.id = d.coordinates
+         JOIN Color cl1 on cl1.id = d.color
+         LEFT JOIN Person p on p.id = d.killer
+         LEFT JOIN Color cl2 on p.heirColor = cl2.id
+ORDER BY age, d.name;
