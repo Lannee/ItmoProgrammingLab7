@@ -119,7 +119,7 @@ public class DatagramConnection implements IConnection {
     }
 
     @Override
-    public Serializable handlingRequest(byte[] byteArray) {
+    public Serializable handleByteArray(byte[] byteArray) {
         logger.info("Client host: {}, client port: {}", clientHost, clientPort);
         Serializable object;
         Packet[] packets = new Packet[0];

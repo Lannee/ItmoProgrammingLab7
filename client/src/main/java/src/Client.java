@@ -1,6 +1,5 @@
 package src;
 
-import module.connection.ChannelConnection;
 import module.connection.IConnection;
 import module.logic.exceptions.InvalidResponseException;
 import module.logic.streams.ConsoleInputManager;
@@ -10,6 +9,7 @@ import module.logic.streams.OutputManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import src.commands.Invoker;
+import src.connection.ChannelConnection;
 
 import java.io.IOException;
 import java.net.UnknownHostException;

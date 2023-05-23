@@ -25,7 +25,7 @@ public class CommandsHandler {
     public void initializeCommands() throws InvalidResponseException {
         Request request = RequestFactory.createRequest(TypeOfRequest.INITIALIZATION);
         connection.send(request);
-        Response response = (Response) connection.receive();
+        Response response = (Response) connection.handleByteArray(new byte[1]);
 //        Response response = connection.sendRequestGetResponse(request);
         if(!(response instanceof CommandsDescriptionResponse commandsDescriptionResponse)) throw new InvalidResponseException();
         commands = commandsDescriptionResponse.getCommands();

@@ -41,7 +41,7 @@ public class Update implements Command {
                 response = new CommandResponse("", ResponseStatus.WAITING);
                 connection.send(response);
                 byte[] byteArray = connection.receive();
-                Request request = (Request) connection.handlingRequest(byteArray); 
+                Request request = (Request) connection.handleByteArray(connection.receive()); 
                 Object createdObject = request.getArgumentsToCommand()[0];
                 receiver.removeFromCollection(obj);
                 receiver.add(createdObject, id);

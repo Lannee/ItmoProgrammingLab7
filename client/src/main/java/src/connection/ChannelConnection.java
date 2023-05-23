@@ -1,5 +1,6 @@
-package module.connection;
+package src.connection;
 
+import module.connection.IConnection;
 import module.connection.packaging.Packet;
 import module.connection.packaging.PacketManager;
 
@@ -17,7 +18,7 @@ public class ChannelConnection implements IConnection {
 
     public static final int PACKAGE_SIZE = Packet.PACKAGE_SIZE;
 
-//    private String host;
+    // private String host;
     private InetAddress host;
     private int port;
 
@@ -55,7 +56,7 @@ public class ChannelConnection implements IConnection {
 
             SocketAddress address = new InetSocketAddress(host, port);
 
-            for(int i = 0; i < packets.length; i++) {
+            for (int i = 0; i < packets.length; i++) {
                 byteBuffer = ByteBuffer.wrap(PacketManager.serialize(packets[i]));
                 datagramChannel.send(byteBuffer, address);
             }
@@ -66,7 +67,12 @@ public class ChannelConnection implements IConnection {
     }
 
     @Override
-    public Serializable receive() {
+    public byte[] receive() {
+        return new byte[PACKAGE_SIZE];
+    }
+
+    @Override
+    public Serializable handleByteArray(byte[] byteArray) {
         long timeoutChecker = System.currentTimeMillis() + CONNECTION_TIMEOUT;
         Serializable object;
         ByteBuffer emptyByteBuffer = ByteBuffer.allocate(PACKAGE_SIZE);
@@ -84,28 +90,22 @@ public class ChannelConnection implements IConnection {
                 byteBuffer = byteBuffer.flip();
 
                 Packet packet = (Packet) PacketManager.deserialize(byteBuffer.array());
-                if(counter == 0) {
+                if (counter == 0) {
                     packagesAmount = packet.getPackagesAmount();
                     packets = new Packet[packagesAmount];
                 }
                 packets[counter] = packet;
                 counter++;
             } while (counter != packagesAmount && (timeoutChecker - System.currentTimeMillis()) >= 0);
-                if (!Arrays.equals(packets, new Packet[0])) {
-                    object = PacketManager.assemble(packets);
-                } else {
-                    throw new IOException("Server connection timeout!");
-                }
+            if (!Arrays.equals(packets, new Packet[0])) {
+                object = PacketManager.assemble(packets);
+            } else {
+                throw new IOException("Server connection timeout!");
+            }
         } catch (IOException io) {
             System.out.println(io.getMessage());
             return null;
         }
         return object;
-    }
-
-    @Override
-    public Serializable handlingRequest(byte[] byteArray) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'handlingRequest'");
     }
 }
