@@ -40,7 +40,8 @@ public class Update implements Command {
             if(obj != null) {
                 response = new CommandResponse("", ResponseStatus.WAITING);
                 connection.send(response);
-                Request request = (Request) connection.receive();
+                byte[] byteArray = connection.receive();
+                Request request = (Request) connection.handlingRequest(byteArray); 
                 Object createdObject = request.getArgumentsToCommand()[0];
                 receiver.removeFromCollection(obj);
                 receiver.add(createdObject, id);

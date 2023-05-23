@@ -1,5 +1,6 @@
-package module.connection;
+package src.connection;
 
+import module.connection.IConnection;
 import module.connection.packaging.Packet;
 import module.connection.packaging.PacketManager;
 import module.connection.responseModule.CommandResponse;
@@ -28,6 +29,8 @@ public class DatagramConnection implements IConnection {
     private boolean isListeningPort;
 
     private final DatagramSocket socket;
+
+    private static final Logger logger = LoggerFactory.getLogger(DatagramConnection.class);
 
     public DatagramConnection() throws SocketException, UnknownHostException {
         this(false);
@@ -84,7 +87,7 @@ public class DatagramConnection implements IConnection {
     }
 
     @Override
-    public synchronized void send(Serializable object) {
+    public void send(Serializable object) {
         try {
             Packet[] packets = PacketManager.split(object);
 
@@ -102,47 +105,49 @@ public class DatagramConnection implements IConnection {
     }
 
     @Override
-    public synchronized Serializable receive() {
-        Serializable object;
+    public byte[] receive() {
+        byte[] bytes = new byte[PACKAGE_SIZE];
+        DatagramPacket datagramPacket = new DatagramPacket(bytes, PACKAGE_SIZE);
         try {
-            Packet[] packets = new Packet[0];
-            byte[] bytes = new byte[PACKAGE_SIZE];
-
-            int counter = 0;
-            int packagesAmount = 1;
-            do {
-                DatagramPacket datagramPacket = new DatagramPacket(bytes, PACKAGE_SIZE);
-                socket.receive(datagramPacket);
-                InetAddress packetHost = datagramPacket.getAddress();
-                Integer packetPort = datagramPacket.getPort();
-                Packet packet = (Packet) PacketManager.deserialize(bytes);
-
-                if (counter == 0) {
-                    packagesAmount = packet.getPackagesAmount();
-                    packets = new Packet[packagesAmount];
-
-                    // Needed to parallel
-                    // if (isListeningPort && (clientHost == null || clientPort == null)) {
-                        // clientHost = packetHost;
-                        // clientPort = packetPort;
-                    // } else if (!clientHost.equals(packetHost) || !clientPort.equals(packetPort)) {
-                    //     send(new CommandResponse("", ResponseStatus.CONNECTION_REJECTED));
-                    //     return receive();
-                    // }
-                }
-                clientHost = packetHost;
-                clientPort = packetPort;
-                System.out.println(clientHost + " " + clientPort);
-                packets[counter] = packet;
-
-            } while (++counter != packagesAmount);
-
-            object = PacketManager.assemble(packets);
-            
-
-        } catch (IOException io) {
-            throw new RuntimeException(io);
+            socket.receive(datagramPacket);
+            clientHost = datagramPacket.getAddress();
+            clientPort = datagramPacket.getPort();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
+        return bytes;
+    }
+
+    @Override
+    public Serializable handlingRequest(byte[] byteArray) {
+        logger.info("Client host: {}, client port: {}", clientHost, clientPort);
+        Serializable object;
+        Packet[] packets = new Packet[0];
+        byte[] bytes = byteArray;
+        
+        int counter = 0;
+        int packagesAmount = 1;
+        do {
+            Packet packet = (Packet) PacketManager.deserialize(bytes);
+
+            if (counter == 0) {
+                packagesAmount = packet.getPackagesAmount();
+                packets = new Packet[packagesAmount];
+
+                // Needed to parallel
+                // if (isListeningPort && (clientHost == null || clientPort == null)) {
+                // clientHost = packetHost;
+                // clientPort = packetPort;
+                // } else if (!clientHost.equals(packetHost) || !clientPort.equals(packetPort))
+                // {
+                // send(new CommandResponse("", ResponseStatus.CONNECTION_REJECTED));
+                // return receive();
+                // }
+            }
+            packets[counter] = packet;
+        } while (++counter != packagesAmount);
+
+        object = PacketManager.assemble(packets);
         return object;
     }
 }

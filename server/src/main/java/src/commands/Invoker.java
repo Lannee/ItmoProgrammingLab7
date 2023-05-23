@@ -131,7 +131,7 @@ public class Invoker {
         return executeClientCommand(request.getCommandName(), request.getArgumentsToCommand());
     }
 
-    public String executeClientCommand(String command, Object[] args) {
+    public synchronized String executeClientCommand(String command, Object[] args) {
         if (declaredClientCommands.containsKey(command)) {
             logger.info("Command executing.");
             return declaredClientCommands.get(command).execute(args);
@@ -141,7 +141,7 @@ public class Invoker {
         }
     }
 
-    private String[] parseArgs(String line) {
+    private synchronized String[] parseArgs(String line) {
         return ARG_PAT.matcher(line)
                 .results()
                 .map(MatchResult::group)
@@ -149,7 +149,7 @@ public class Invoker {
                 .toArray(String[]::new);
     }
 
-    public List<CommandDescription> getCommandsDescriptions() {
+    public synchronized List<CommandDescription> getCommandsDescriptions() {
         List<CommandDescription> commandDescriptions = new ArrayList<>(declaredClientCommands.size());
         declaredClientCommands.forEach((u, v) -> {
             commandDescriptions.add(

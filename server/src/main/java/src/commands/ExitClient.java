@@ -3,10 +3,10 @@ package src.commands;
 
 import module.commands.CommandArgument;
 import module.commands.CommandType;
-import module.connection.DatagramConnection;
 import module.connection.IConnection;
 import module.connection.responseModule.CommandResponse;
 import module.connection.responseModule.ResponseStatus;
+import src.connection.DatagramConnection;
 
 /**
  * Exit program

@@ -1,6 +1,5 @@
 package src;
 
-import module.connection.DatagramConnection;
 import module.connection.IConnection;
 import module.connection.requestModule.Request;
 import module.connection.responseModule.*;
@@ -9,6 +8,7 @@ import module.logic.streams.ConsoleOutputManager;
 import module.logic.streams.InputManager;
 import module.logic.streams.OutputManager;
 import src.commands.Invoker;
+import src.connection.DatagramConnection;
 import src.logic.data.Receiver;
 
 import org.slf4j.Logger;
@@ -16,8 +16,6 @@ import org.slf4j.LoggerFactory;
 
 import java.net.SocketException;
 import java.net.UnknownHostException;
-import java.util.List;
-import java.util.Vector;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -37,8 +35,8 @@ public class Server {
     private Invoker invoker;
     private static final Logger logger = LoggerFactory.getLogger(Server.class);
 
-    private ExecutorService executorServiceForExecuting = Executors.newCachedThreadPool();
-    private ExecutorService executorServiceForReceiving = Executors.newFixedThreadPool(5);
+    private ExecutorService executorServiceForReceivingRequests = Executors.newFixedThreadPool(5);
+    private ExecutorService executorServiceForExecutingCommands = Executors.newCachedThreadPool();
 
     public void start(String[] args) {
 
@@ -77,29 +75,28 @@ public class Server {
         }).start();
 
         while (running) {
+            byte[] byteArray = connection.receive();
             Callable<Request> callableGetRequest = () -> {
-                return (Request) connection.receive();
+                return (Request) connection.handlingRequest(byteArray);
             };
             Request request;
             try {
-                request = executorServiceForReceiving.submit(callableGetRequest).get();
+                request = executorServiceForReceivingRequests.submit(callableGetRequest).get();
 
                 // Request request = (Request) connection.receive();
                 // executorServiceForReceiving.submit(() -> {});
                 logger.info("Received request from client with command '{}' and arguments '{}'",
                         request.getCommandName(), request.getArgumentsToCommand());
 
-                Response response = null;
                 switch (request.getTypeOfRequest()) {
                     case COMMAND, CONFIRMATION -> {
-                        executorServiceForExecuting.submit(() -> {
+                        executorServiceForExecutingCommands.submit(() -> {
                             connection.send(new CommandResponse(invoker.parseRequest(request)));
                             logger.info("Response sent.");
                         });
-
                     }
                     case INITIALIZATION -> {
-                        response = new CommandsDescriptionResponse(invoker.getCommandsDescriptions());
+                        Response response = new CommandsDescriptionResponse(invoker.getCommandsDescriptions());
                         connection.send(response);
                     }
                 }

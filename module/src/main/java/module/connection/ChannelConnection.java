@@ -102,4 +102,10 @@ public class ChannelConnection implements IConnection {
         }
         return object;
     }
+
+    @Override
+    public Serializable handlingRequest(byte[] byteArray) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'handlingRequest'");
+    }
 }
