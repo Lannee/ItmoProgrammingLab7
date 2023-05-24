@@ -107,7 +107,7 @@ public class Invoker {
 
                 for(CommandArgument objectArgument : objectArguments) {
                     try {
-                        args = addArgument(new Object[] {}, caller.getObjectArgument(objectArgument.getArgumentType()));
+                        args = addArgument(args, caller.getObjectArgument(objectArgument.getArgumentType()));
                         response = sendRequestAndGetResponse(RequestFactory.createRequest(commandName, args, TypeOfRequest.CONFIRMATION));
                         logger.info("Response with status '{}' received. Message - '{}'", response.getResponseStatus(), response.getResponse());
                         if(response.getResponseStatus() == ResponseStatus.CONNECTION_REJECTED) {

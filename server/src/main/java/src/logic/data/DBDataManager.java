@@ -243,7 +243,7 @@ public class DBDataManager implements DataManager<Dragon> {
                     Dragon oldObject = getDragonById(id);
                     remove(oldObject);
                     newObject.setId(id);
-                    add(newObject);
+                    addToCollection(newObject);
                     sort();
                 } else {
                     dbConnection.rollback(savepoint);
@@ -347,6 +347,10 @@ public class DBDataManager implements DataManager<Dragon> {
             if(dragon.getId() == id) return dragon;
         }
         return null;
+    }
+
+    public void addToCollection(Dragon newObject) {
+        collection.add(collection.size(), newObject);
     }
 
     public void sort() {

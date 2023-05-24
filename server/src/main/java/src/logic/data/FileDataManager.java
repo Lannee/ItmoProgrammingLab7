@@ -1,7 +1,5 @@
 package src.logic.data;
 
-import module.logic.exceptions.ObjectDoesNotExistsException;
-
 import java.io.File;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.time.LocalDateTime;

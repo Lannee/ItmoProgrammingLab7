@@ -91,8 +91,13 @@ public class Server {
                 switch (request.getTypeOfRequest()) {
                     case COMMAND, CONFIRMATION -> {
                         executorServiceForExecutingCommands.submit(() -> {
-                            connection.send(new CommandResponse(invoker.parseRequest(request)));
-                            logger.info("Response sent.");
+                            String result = invoker.parseRequest(request);
+                            if (result == "WAITING") {
+                                connection.send(new CommandResponse(result, ResponseStatus.WAITING));
+                            } else {
+                                connection.send(new CommandResponse(result));
+                                logger.info("Response sent.");
+                            }
                         });
                     }
                     case INITIALIZATION -> {
