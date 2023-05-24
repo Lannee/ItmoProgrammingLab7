@@ -1,5 +1,7 @@
 package src.logic.data;
 
+import module.logic.exceptions.ObjectDoesNotExistsException;
+
 import java.io.File;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.time.LocalDateTime;
@@ -66,6 +68,11 @@ public abstract class FileDataManager<T extends Comparable<? super T>> implement
         collection.add(element);
         sort();
         modification = LocalDateTime.now();
+    }
+
+    @Override
+    public void update(long id, T newObject) {
+
     }
 
     @Override

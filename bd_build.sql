@@ -71,10 +71,31 @@ values (
         (select id from Person where name = 'Egor' and passportID = 'ereteg241532')
        );
 
-SELECT d.id id, d.name name, cr.id coordinatesId, x, y, creationDate, age, wingspan, weight, cl1.color color, p.id killerId, p.name killerName, birthday, height, passportID, cl2.color heirColor
-FROM Dragon d
-         JOIN Coordinates cr on cr.id = d.coordinates
-         JOIN Color cl1 on cl1.id = d.color
-         LEFT JOIN Person p on p.id = d.killer
-         LEFT JOIN Color cl2 on p.heirColor = cl2.id
+SELECT d.id AS id, d.name AS name, cr.id coordinatesId, x, y, creationDate, age, wingspan, weight, cl1.color AS color, p.id killerId, p.name killerName, birthday, height, passportID, cl2.color AS heirColor
+FROM dragon d
+         JOIN coordinates cr on cr.id = d.coordinates
+         JOIN color cl1 on cl1.id = d.color
+         LEFT JOIN person p on p.id = d.killer
+         LEFT JOIN color cl2 on p.heirColor = cl2.id
 ORDER BY age, d.name;
+
+UPDATE dragon
+SET name = ?, age = ?,wingspan = ?,
+    weight = ?, color = (SELECT id FROM color WHERE Color.color = ?)
+WHERE id = ?;
+
+UPDATE coordinates
+SET x = ?, y = ?
+WHERE id = ?;
+
+UPDATE person
+SET name = ?, birthday = ?, height = ?,
+    passportID = ?, heirColor = (SELECT id FROM color WHERE Color.color = ?)
+WHERE id = ?;
+
+SELECT coordinates, killer
+FROM dragon
+WHERE id = ?;
+
+DELETE FROM person
+WHERE id = ?;

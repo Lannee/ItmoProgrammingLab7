@@ -43,8 +43,9 @@ public class Update implements Command {
                 byte[] byteArray = connection.receive();
                 Request request = (Request) connection.handleByteArray(connection.receive()); 
                 Object createdObject = request.getArgumentsToCommand()[0];
-                receiver.removeFromCollection(obj);
-                receiver.add(createdObject, id);
+                receiver.update(id, createdObject);
+//                receiver.removeFromCollection(obj);
+//                receiver.add(createdObject, id);
                 return "Object with " + args()[0].getArgumentName() + " " + id + " was successfully updated";
             } else {
 //                response = new CommandResponse("Element with this id does not exist", ResponseStatus.FAILED);

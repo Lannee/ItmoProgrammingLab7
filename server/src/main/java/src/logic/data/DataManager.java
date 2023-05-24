@@ -1,5 +1,7 @@
 package src.logic.data;
 
+import module.logic.exceptions.ObjectDoesNotExistsException;
+
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
@@ -20,6 +22,8 @@ public interface DataManager<T extends Comparable<? super T>> {
      * @param element
      */
     void add(T element);
+
+    void update(long id, T newObject);
 
     /**
      * Add all specified elements to the collection

@@ -1,6 +1,7 @@
 package src.logic.data;
 
 import module.logic.exceptions.CannotCreateObjectException;
+import module.logic.exceptions.ObjectDoesNotExistsException;
 import module.stored.Dragon;
 import src.utils.Formatter;
 import module.utils.ObjectUtils;
@@ -15,7 +16,7 @@ import java.util.function.Predicate;
  */
 public class Receiver {
 //    private final DataManager<Dragon> collection = new CSVFileDataManager<>(Dragon.class);
-    private final DataManager<Dragon> collection = new DBDataManager("jdbc:postgresql://localhost:5432/postgres");
+    private final DataManager<Dragon> collection = new DBDataManager("jdbc:postgresql://localhost:5432/studs");
 
     public Receiver(String filePath) {
         collection.initialize(filePath);
@@ -23,6 +24,13 @@ public class Receiver {
 
     public synchronized void add(Object obj) {
         collection.add(getStoredType().cast(obj));
+    }
+
+    public synchronized void update(long id, Object newObject) {
+        if (id <= 0) throw new NumberFormatException("Incorrect argument value");
+        if(!(newObject instanceof Dragon dragon)) throw new ClassCastException();
+
+        collection.update(id, dragon);
     }
 
     public synchronized void add(Object obj, long id) {

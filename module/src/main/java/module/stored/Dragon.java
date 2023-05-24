@@ -112,6 +112,10 @@ public class Dragon implements Comparable<Dragon>, Serializable {
         this.killer = killer;
     }
 
+    public long getId() {
+        return id;
+    }
+
     public String getName() {
         return name;
     }
