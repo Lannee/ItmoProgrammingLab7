@@ -88,7 +88,6 @@ public class Server {
                 InetAddress clientHost = connection.getRecipientHost();
                 int clientPort = connection.getRecipientPort();
 
-
                 logger.info("Received request from client with command '{}' and arguments '{}'",
                         request.getCommandName(), request.getArgumentsToCommand());
 
