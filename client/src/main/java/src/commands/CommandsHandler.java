@@ -9,7 +9,6 @@ import module.connection.responseModule.CommandsDescriptionResponse;
 import module.connection.responseModule.Response;
 import module.logic.exceptions.InvalidResponseException;
 
-import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -24,7 +23,7 @@ public class CommandsHandler {
 
     public void initializeCommands() throws InvalidResponseException {
         Request request = RequestFactory.createRequest(TypeOfRequest.INITIALIZATION);
-        connection.send(request);
+        connection.send(connection.getRecipientHost(), connection.getRecipientPort(), request);
         Response response = (Response) connection.packetConsumer();
 //        Response response = connection.sendRequestGetResponse(request);
         if(!(response instanceof CommandsDescriptionResponse commandsDescriptionResponse)) throw new InvalidResponseException();

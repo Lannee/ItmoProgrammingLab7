@@ -3,8 +3,6 @@ package src.connection;
 import module.connection.IConnection;
 import module.connection.packaging.Packet;
 import module.connection.packaging.PacketManager;
-import module.connection.responseModule.CommandResponse;
-import module.connection.responseModule.ResponseStatus;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
 
@@ -87,7 +85,7 @@ public class DatagramConnection implements IConnection {
     }
 
     @Override
-    public void send(Serializable object) {
+    public void send(InetAddress host, int port, Serializable object) {
         try {
             Packet[] packets = PacketManager.split(object);
 
@@ -95,8 +93,8 @@ public class DatagramConnection implements IConnection {
                 DatagramPacket datagramPacket = new DatagramPacket(
                         PacketManager.serialize(packet),
                         PACKAGE_SIZE,
-                        clientHost,
-                        clientPort);
+                        host,
+                        port);
                 socket.send(datagramPacket);
             }
         } catch (IOException e) {
@@ -150,5 +148,15 @@ public class DatagramConnection implements IConnection {
 
         object = PacketManager.assemble(packets);
         return object;
+    }
+
+    @Override
+    public InetAddress getRecipientHost() {
+        return clientHost;
+    }
+
+    @Override
+    public int getRecipientPort() {
+        return clientPort;
     }
 }

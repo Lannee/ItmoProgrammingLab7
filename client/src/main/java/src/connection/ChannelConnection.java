@@ -12,7 +12,7 @@ import java.nio.channels.DatagramChannel;
 import java.util.Arrays;
 
 public class ChannelConnection implements IConnection {
-    private static final long CONNECTION_TIMEOUT = 5000;
+    private static final long CONNECTION_TIMEOUT = 15000;
 
     public static final int STANDARD_PORT = 8787;
 
@@ -49,7 +49,7 @@ public class ChannelConnection implements IConnection {
     }
 
     @Override
-    public void send(Serializable obj) {
+    public void send(InetAddress host, int port, Serializable obj) {
         try {
             Packet[] packets = PacketManager.split(obj);
             ByteBuffer byteBuffer;
@@ -63,7 +63,6 @@ public class ChannelConnection implements IConnection {
         } catch (IOException io) {
             io.printStackTrace();
         }
-
     }
 
     @Override
@@ -107,5 +106,15 @@ public class ChannelConnection implements IConnection {
             return null;
         }
         return object;
+    }
+
+    @Override
+    public InetAddress getRecipientHost() {
+        return host;
+    }
+
+    @Override
+    public int getRecipientPort() {
+        return port;
     }
 }

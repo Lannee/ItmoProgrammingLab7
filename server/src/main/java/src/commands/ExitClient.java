@@ -4,9 +4,6 @@ package src.commands;
 import module.commands.CommandArgument;
 import module.commands.CommandType;
 import module.connection.IConnection;
-import module.connection.responseModule.CommandResponse;
-import module.connection.responseModule.ResponseStatus;
-import src.connection.DatagramConnection;
 
 /**
  * Exit program
@@ -19,11 +16,6 @@ public class ExitClient implements Command {
     @Override
     public String execute(Object[] args) {
         checkArgsConformity(args);
-
-        DatagramConnection connectionDC = (DatagramConnection) connection;
-        connectionDC.send(new CommandResponse("", ResponseStatus.SUCCESSFULLY));
-        connectionDC.setClientPort(null);
-        connectionDC.setClientHost(null);
         return "";
     }
 

@@ -1,8 +1,22 @@
 package src;
 
+import java.net.InetAddress;
+import java.net.SocketException;
+import java.net.UnknownHostException;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import module.connection.IConnection;
 import module.connection.requestModule.Request;
-import module.connection.responseModule.*;
+import module.connection.responseModule.CommandResponse;
+import module.connection.responseModule.CommandsDescriptionResponse;
+import module.connection.responseModule.Response;
+import module.connection.responseModule.ResponseStatus;
 import module.logic.streams.ConsoleInputManager;
 import module.logic.streams.ConsoleOutputManager;
 import module.logic.streams.InputManager;
@@ -10,16 +24,6 @@ import module.logic.streams.OutputManager;
 import src.commands.Invoker;
 import src.connection.DatagramConnection;
 import src.logic.data.Receiver;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.net.SocketException;
-import java.net.UnknownHostException;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 public class Server {
     private final static int SERVER_PORT = 50689;
@@ -81,9 +85,10 @@ public class Server {
             Request request;
             try {
                 request = executorServiceForReceivingRequests.submit(callableGetRequest).get();
+                InetAddress clientHost = connection.getRecipientHost();
+                int clientPort = connection.getRecipientPort();
 
-                // Request request = (Request) connection.receive();
-                // executorServiceForReceiving.submit(() -> {});
+
                 logger.info("Received request from client with command '{}' and arguments '{}'",
                         request.getCommandName(), request.getArgumentsToCommand());
 
@@ -92,16 +97,16 @@ public class Server {
                         executorServiceForExecutingCommands.submit(() -> {
                             String result = invoker.parseRequest(request);
                             if (result == "WAITING") {
-                                connection.send(new CommandResponse(result, ResponseStatus.WAITING));
+                                connection.send(clientHost, clientPort, new CommandResponse(result, ResponseStatus.WAITING));
                             } else {
-                                connection.send(new CommandResponse(result));
+                                connection.send(clientHost, clientPort, new CommandResponse(result));
                                 logger.info("Response sent.");
                             }
                         });
                     }
                     case INITIALIZATION -> {
                         Response response = new CommandsDescriptionResponse(invoker.getCommandsDescriptions());
-                        connection.send(response);
+                        connection.send(clientHost, clientPort, response);
                     }
                 }
             } catch (InterruptedException | ExecutionException e) {
