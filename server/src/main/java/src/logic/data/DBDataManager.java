@@ -186,6 +186,7 @@ public class DBDataManager implements DataManager<Dragon> {
 
     @Override
     public void update(long id, Dragon newObject) {
+        System.out.println("here2");
         try {
             dbConnection.setAutoCommit(false);
             Savepoint savepoint = dbConnection.setSavepoint();
@@ -228,7 +229,7 @@ public class DBDataManager implements DataManager<Dragon> {
                     personId = addPersonToDB(newKiller);
                     PreparedStatement setKillerId = dbConnection.prepareStatement(updateKillerId);
                     setKillerId.setLong(1, personId);
-                    setKillerId.setLong(1, id);
+                    setKillerId.setLong(2, id);
                     setKillerId.executeUpdate();
                 }
             }
