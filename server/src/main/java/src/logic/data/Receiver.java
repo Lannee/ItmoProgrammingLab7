@@ -22,6 +22,7 @@ public class Receiver {
     }
 
     public synchronized void add(Object obj) {
+        System.out.println("-------------------------Didn't fall--------------------------'-1'");
         collection.add(getStoredType().cast(obj));
     }
 

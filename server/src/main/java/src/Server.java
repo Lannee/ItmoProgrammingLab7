@@ -75,9 +75,8 @@ public class Server {
         }).start();
 
         while (running) {
-            byte[] byteArray = connection.receive();
             Callable<Request> callableGetRequest = () -> {
-                return (Request) connection.handleByteArray(byteArray);
+                return (Request) connection.packetConsumer();
             };
             Request request;
             try {

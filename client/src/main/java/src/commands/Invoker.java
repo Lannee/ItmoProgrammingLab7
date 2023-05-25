@@ -152,7 +152,7 @@ public class Invoker {
     public CommandResponse sendRequestAndGetResponse(Request request) {
         connection.send(request);
         Response response = null;
-        response = (Response) connection.handleByteArray(connection.receive());
+        response = (Response) connection.packetConsumer();
         if (response instanceof CommandResponse commandResponse) {
             return commandResponse;
         }

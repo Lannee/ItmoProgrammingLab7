@@ -72,7 +72,7 @@ public class ChannelConnection implements IConnection {
     }
 
     @Override
-    public Serializable handleByteArray(byte[] byteArray) {
+    public Serializable packetConsumer() {
         long timeoutChecker = System.currentTimeMillis() + CONNECTION_TIMEOUT;
         Serializable object;
         ByteBuffer emptyByteBuffer = ByteBuffer.allocate(PACKAGE_SIZE);

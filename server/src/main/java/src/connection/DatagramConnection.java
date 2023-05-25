@@ -105,7 +105,7 @@ public class DatagramConnection implements IConnection {
     }
 
     @Override
-    public byte[] receive() {
+    public synchronized byte[] receive() {
         byte[] bytes = new byte[PACKAGE_SIZE];
         DatagramPacket datagramPacket = new DatagramPacket(bytes, PACKAGE_SIZE);
         try {
@@ -119,15 +119,16 @@ public class DatagramConnection implements IConnection {
     }
 
     @Override
-    public Serializable handleByteArray(byte[] byteArray) {
-        logger.info("Client host: {}, client port: {}", clientHost, clientPort);
+    public Serializable packetConsumer() {
         Serializable object;
         Packet[] packets = new Packet[0];
-        byte[] bytes = byteArray;
         
         int counter = 0;
         int packagesAmount = 1;
         do {
+            byte[] bytes = receive();
+            logger.info("Client host: {}, client port: {}", clientHost, clientPort);
+
             Packet packet = (Packet) PacketManager.deserialize(bytes);
 
             if (counter == 0) {
