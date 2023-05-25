@@ -213,10 +213,23 @@ public class DBDataManager implements DataManager<Dragon> {
                 if (newKiller != null) {
                     PreparedStatement personStatement = dbConnection.prepareStatement(updatePerson);
                     personStatement.setString(1, newKiller.getName());
-                    personStatement.setTimestamp(2, Timestamp.from(newKiller.getBirthday().toInstant()));
+
+                    if(newKiller.getBirthday() != null) personStatement.setTimestamp(2, Timestamp.from(newKiller.getBirthday().toInstant()));
+                    else personStatement.setNull(2, Types.TIMESTAMP);
+
                     personStatement.setFloat(3, newKiller.getHeight());
                     personStatement.setString(4, newKiller.getPassportID());
-                    personStatement.setString(5, newKiller.getHairColor().name());
+
+                    if(newKiller.getHairColor() == null) {
+                        personStatement.setNull(5, Types.INTEGER);
+                    } else {
+                        PreparedStatement heirColor = dbConnection.prepareStatement(getColorID);
+                        heirColor.setString(1, newKiller.getHairColor().name());
+                        ResultSet heirColorID = heirColor.executeQuery();
+                        heirColorID.next();
+                        personStatement.setInt(5, heirColorID.getInt(1));
+                    }
+
                     personStatement.setLong(6, personId);
                     personStatement.executeUpdate();
                 } else {
@@ -237,8 +250,13 @@ public class DBDataManager implements DataManager<Dragon> {
             // updating dragon
             PreparedStatement dragonStatement = dbConnection.prepareStatement(updateDragon);
             dragonStatement.setString(1, newObject.getName());
-            dragonStatement.setLong(2, newObject.getAge());
-            dragonStatement.setLong(3, newObject.getWingspan());
+
+            if(newObject.getAge() != null) dragonStatement.setLong(2, newObject.getAge());
+            else dragonStatement.setNull(2, Types.BIGINT);
+
+            if(newObject.getWingspan() != null) dragonStatement.setLong(3, newObject.getWingspan());
+            else dragonStatement.setNull(3, Types.INTEGER);
+
             dragonStatement.setFloat(4, newObject.getWeight());
             dragonStatement.setString(5, newObject.getColor().name());
             dragonStatement.setLong(6, id);

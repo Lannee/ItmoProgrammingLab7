@@ -25,7 +25,7 @@ public final class DBQueries {
             INSERT INTO dragon (name, coordinates, age, wingspan, weight, color, killer)
                     VALUES (
                                ?, ?, ?, ?, ?,
-                               (SELECT id FROM color WHERE color = ?), ?
+                               (SELECT id FROM color WHERE color = ? LIMIT 1), ?
                            );
             """;
 
@@ -56,7 +56,7 @@ public final class DBQueries {
     public static final String updatePerson = """
             UPDATE person
             SET name = ?, birthday = ?, height = ?,
-                passportID = ?, heirColor = (SELECT id FROM color WHERE Color.color = ?)
+                passportID = ?, heirColor = ?
             WHERE id = ?;
             """;
 
@@ -69,5 +69,11 @@ public final class DBQueries {
     public static final String deletePersonById = """
             DELETE FROM person
             WHERE id = ?;
+            """;
+
+    public static final String getColorID = """
+            SELECT id
+            FROM color
+            WHERE Color.color = ?
             """;
 }
