@@ -91,17 +91,8 @@ public class DatagramConnection implements IConnection {
             ObjectDevider objectDevider = new ObjectDevider(PacketManager.getBytesFromObj(object));
             ForkJoinPool forkJoinPool = new ForkJoinPool();
             Packet[] packets = forkJoinPool.invoke(objectDevider);
-            
-            if (packets[packets.length - 1].getSerialNumber() + 1 > PackageAmountStorage.maxPackagesAmount) {
-                int maxValueOfAmountOfPackets = packets[packets.length - 1].getSerialNumber() + 1;
-                System.out.println(maxValueOfAmountOfPackets);
-                for (Packet packet : packets) {
-                    packet.setPackagesAmount(maxValueOfAmountOfPackets);
-                }
-            }
 
             Packet.setCounter(0);
-            PackageAmountStorage.setMaxPackagesAmount(0);
 
             for (Packet packet : packets) {
                 logger.info("num: {}, amount: {}", packet.getSerialNumber(), packet.getPackagesAmount());

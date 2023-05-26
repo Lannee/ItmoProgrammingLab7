@@ -3,7 +3,7 @@ package module.connection.packaging;
 import java.io.Serializable;
 import java.util.Arrays;
 
-public class Packet implements Serializable {
+public class Packet implements Serializable, Comparable<Packet> {
     private static final long serialVersionUID = 6529685098267717622L;
 
     public static final int DATA_SIZE = 1024;  // объем передаваемых данных
@@ -59,5 +59,10 @@ public class Packet implements Serializable {
 
     public static void setCounter(int newCounterVal) {
         counter = newCounterVal;
+    }
+
+    @Override
+    public int compareTo(Packet arg0) {
+        return serialNumber - arg0.serialNumber;
     }
 }
