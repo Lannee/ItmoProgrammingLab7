@@ -1,27 +1,28 @@
 package src;
 
+import java.io.FileNotFoundException;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.Objects;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import module.connection.responseModule.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import module.connection.IConnection;
 import module.connection.requestModule.Request;
-import module.connection.responseModule.CommandResponse;
-import module.connection.responseModule.CommandsDescriptionResponse;
-import module.connection.responseModule.Response;
-import module.connection.responseModule.ResponseStatus;
 import module.logic.streams.ConsoleInputManager;
 import module.logic.streams.ConsoleOutputManager;
 import module.logic.streams.InputManager;
 import module.logic.streams.OutputManager;
+import src.authorization.Authorization;
 import src.commands.Invoker;
 import src.connection.DatagramConnection;
 import src.logic.data.Receiver;
@@ -36,8 +37,10 @@ public class Server {
     public static final OutputManager out = new ConsoleOutputManager();
 
     private IConnection connection;
+    private Connection dbConnection;
 
     private Invoker invoker;
+    private Authorization authorization;
     private static final Logger logger = LoggerFactory.getLogger(Server.class);
 
     private ExecutorService executorServiceForReceivingRequests = Executors.newFixedThreadPool(5);
@@ -52,6 +55,8 @@ public class Server {
             connection = new DatagramConnection(SERVER_PORT, true);
             invoker = new Invoker(connection,
                     new Receiver(filePath));
+
+            authorization = new Authorization(filePath, "jdbc:postgresql://localhost:5432/studs");
             logger.info("Invoker and Receiver started.");
         } catch (SocketException e) {
             logger.error("This address is currently in use.");
@@ -59,6 +64,10 @@ public class Server {
         } catch (UnknownHostException e) {
             running = false;
             logger.error("Unknown host.");
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
         }
 
         new Thread(() -> {
@@ -109,7 +118,8 @@ public class Server {
                         connection.send(clientHost, clientPort, response);
                     }
                     case LOGGING -> {
-
+//                        Response response = new LoggingResponse();
+//                        connection.send(clientHost, clientPort, response);
                     }
                 }
             } catch (InterruptedException | ExecutionException e) {

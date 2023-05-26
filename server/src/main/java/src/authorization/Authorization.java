@@ -1,11 +1,11 @@
 package src.authorization;
 
+import module.utils.PGParser;
+
+import java.io.FileNotFoundException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 
 import static src.authorization.AuthorizationQueries.*;
 
@@ -15,13 +15,20 @@ public class Authorization {
 
     private static MessageDigest md5;
 
-    private final Connection connection;
+    private Connection connection;
 
-    public Authorization(Connection connection) {
-        this.connection = connection;
+    public Authorization(String filePath, String dbURL) throws FileNotFoundException, SQLException {
         try {
+            PGParser pgParser = new PGParser(filePath);
+
+            Class.forName("org.postgresql.Driver");
+            connection = DriverManager.getConnection(dbURL, pgParser.getUserName(), pgParser.getPassword());
+
             md5 = MessageDigest.getInstance("DM5");
         } catch (NoSuchAlgorithmException ignored) {}
+        catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public boolean isUserExists(String user) {
