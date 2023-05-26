@@ -79,7 +79,7 @@ public class Client {
                     line = in.readLine();
                     logger.info("User typed: '{}'", line.trim());
                     try {
-                        String commandResult = invoker.parseCommand(line);
+                        String commandResult = invoker.parseCommand(userName, userPassword, line);
                         out.print(commandResult.equals("") ? "" : commandResult);
                     } catch (NullPointerException ne) {
                         running = false;

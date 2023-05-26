@@ -1,5 +1,7 @@
 package src.authorization;
 
+import module.connection.responseModule.LoginStatus;
+import module.connection.responseModule.RegistrationStatus;
 import module.logic.exceptions.FileFormatException;
 import module.utils.PGParser;
 

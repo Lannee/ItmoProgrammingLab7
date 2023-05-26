@@ -1,6 +1,6 @@
-package src.authorization;
+package module.connection.responseModule;
 
-public enum LoginStatus {
+public enum LoginStatus implements IStatus { 
     SUCCESSFUL("Login successful"),
     INVALID_PASSWORD("Login failed: invalid password"),
     FAILED("Login failed");
