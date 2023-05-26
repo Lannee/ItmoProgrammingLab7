@@ -3,6 +3,7 @@ package src;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.util.Objects;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -45,8 +46,8 @@ public class Server {
     public void start(String[] args) {
 
         logger.info("Starting server.");
-        String filePath = getFilePath(args);
-        // String filePath = getFilePath(new String[]{"FileJ"});
+//        String filePath = getFilePath(args);
+         String filePath = "C:\\Users\\uncle\\OneDrive\\Desktop\\.pgpass";
 
         try {
             connection = new DatagramConnection(SERVER_PORT, true);
@@ -95,7 +96,7 @@ public class Server {
                     case COMMAND, CONFIRMATION -> {
                         executorServiceForExecutingCommands.submit(() -> {
                             String result = invoker.parseRequest(request);
-                            if (result == "WAITING") {
+                            if (result.equals("WAITING")) {
                                 connection.send(clientHost, clientPort, new CommandResponse(result, ResponseStatus.WAITING));
                             } else {
                                 connection.send(clientHost, clientPort, new CommandResponse(result));
@@ -106,6 +107,9 @@ public class Server {
                     case INITIALIZATION -> {
                         Response response = new CommandsDescriptionResponse(invoker.getCommandsDescriptions());
                         connection.send(clientHost, clientPort, response);
+                    }
+                    case LOGGING -> {
+
                     }
                 }
             } catch (InterruptedException | ExecutionException e) {

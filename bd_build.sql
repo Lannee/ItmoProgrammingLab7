@@ -32,7 +32,7 @@ create table Dragon (
 
 create table "user" (
     id serial primary key,
-    login varchar(50) not null check ( login not like '' ),
+    login varchar(50) not null check ( login not like '' ) unique ,
     password varbit(128) not null check ( length(password) = 128 ),
     salt varbit(32) not null check ( length(password) = 32 )
 );
@@ -79,23 +79,26 @@ FROM dragon d
          LEFT JOIN color cl2 on p.heirColor = cl2.id
 ORDER BY age, d.name;
 
--- UPDATE dragon
--- SET name = ?, age = ?,wingspan = ?,
---     weight = ?, color = (SELECT id FROM color WHERE Color.color = ?)
--- WHERE id = ?;
+UPDATE dragon
+SET name = ?, age = ?,wingspan = ?,
+    weight = ?, color = (SELECT id FROM color WHERE Color.color = ?)
+WHERE id = ?;
 
--- UPDATE coordinates
--- SET x = ?, y = ?
--- WHERE id = ?;
+UPDATE coordinates
+SET x = ?, y = ?
+WHERE id = ?;
 
--- UPDATE person
--- SET name = ?, birthday = ?, height = ?,
---     passportID = ?, heirColor = (SELECT id FROM color WHERE Color.color = ?)
--- WHERE id = ?;
+UPDATE person
+SET name = ?, birthday = ?, height = ?,
+    passportID = ?, heirColor = (SELECT id FROM color WHERE Color.color = ?)
+WHERE id = ?;
 
--- SELECT coordinates, killer
--- FROM dragon
--- WHERE id = ?;
+SELECT coordinates, killer
+FROM dragon
+WHERE id = ?;
 
--- DELETE FROM person
--- WHERE id = ?;
+DELETE FROM person
+WHERE id = ?;
+
+DELETE FROM color cl1 USING color cl2
+WHERE cl1.id > cl2.id AND cl1.color = cl2.color;
