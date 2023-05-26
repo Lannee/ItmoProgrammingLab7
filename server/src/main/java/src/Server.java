@@ -118,8 +118,8 @@ public class Server {
                         connection.send(clientHost, clientPort, response);
                     }
                     case LOGGING -> {
-//                        Response response = new LoggingResponse();
-//                        connection.send(clientHost, clientPort, response);
+                        // Response response = new LoggingResponse();
+                        // connection.send(clientHost, clientPort, response);
                     }
                 }
             } catch (InterruptedException | ExecutionException e) {

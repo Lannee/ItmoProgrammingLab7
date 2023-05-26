@@ -7,7 +7,7 @@ import module.connection.packaging.PacketManager;
 
 import static java.lang.Math.ceil;
 
-public class ObjectDevider /* extends RecursiveTask<Packet[]> */ {
+public class ObjectDevider extends RecursiveTask<Packet[]> {
 
     private byte[] byteArrayToSending;
 
@@ -15,7 +15,7 @@ public class ObjectDevider /* extends RecursiveTask<Packet[]> */ {
         byteArrayToSending = aByteArrayToSending;
     }
 
-    // @Override
+    @Override
     protected Packet[] compute() {
         Packet[] packets;
         int packagesAmount = (int) ceil((double) byteArrayToSending.length / (double) Packet.DATA_SIZE);
