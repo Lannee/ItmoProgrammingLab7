@@ -9,7 +9,6 @@ import org.slf4j.Logger;
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.*;
-import java.util.concurrent.ForkJoinPool;
 
 public class DatagramConnection implements IConnection {
 
@@ -88,14 +87,9 @@ public class DatagramConnection implements IConnection {
     @Override
     public void send(InetAddress host, int port, Serializable object) {
         try {
-            ObjectDevider objectDevider = new ObjectDevider(PacketManager.getBytesFromObj(object));
-            ForkJoinPool forkJoinPool = new ForkJoinPool();
-            Packet[] packets = forkJoinPool.invoke(objectDevider);
-
-            Packet.setCounter(0);
+            Packet[] packets = PacketManager.split(object);
 
             for (Packet packet : packets) {
-                logger.info("num: {}, amount: {}", packet.getSerialNumber(), packet.getPackagesAmount());
                 DatagramPacket datagramPacket = new DatagramPacket(
                         PacketManager.serialize(packet),
                         PACKAGE_SIZE,
