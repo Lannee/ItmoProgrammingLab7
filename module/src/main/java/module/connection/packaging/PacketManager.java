@@ -65,7 +65,7 @@ public class PacketManager {
     }
 
     public static Serializable assemble(Packet[] packets) {
-        
+        Arrays.sort(packets);
         byte[] byteObject = new byte[Packet.DATA_SIZE * packets.length];
 
         for(int i = 0; i < packets.length; i++) {

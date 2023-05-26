@@ -3,7 +3,7 @@ package module.connection.packaging;
 import java.io.Serializable;
 import java.util.Arrays;
 
-public class Packet implements Serializable {
+public class Packet implements Serializable, Comparable<Packet> {
 
     public static final int DATA_SIZE = 1024;  // объем передаваемых данных
     public static final int PACKAGE_SIZE = DATA_SIZE + 130; // такое количество байт занимает данный объект в сериализованном виде
@@ -43,5 +43,10 @@ public class Packet implements Serializable {
                 ", packagesAmount=" + packagesAmount +
                 ", data=" + Arrays.toString(data) +
                 '}';
+    }
+
+    @Override
+    public int compareTo(Packet arg0) {
+        return serialNumber - arg0.serialNumber;
     }
 }
