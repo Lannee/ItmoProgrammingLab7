@@ -6,6 +6,7 @@ import module.utils.ObjectUtils;
 
 import java.lang.reflect.Field;
 import java.util.*;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Predicate;
 
 /**
@@ -14,24 +15,33 @@ import java.util.function.Predicate;
 public class Receiver {
 //    private final DataManager<Dragon> collection = new CSVFileDataManager<>(Dragon.class);
     private final DataManager<Dragon> collection = new DBDataManager("jdbc:postgresql://localhost:5432/studs");
+    ReentrantLock reentrantLockOnWrite = new ReentrantLock();
+    ReentrantLock reentrantLockOnRead = new ReentrantLock();
 
     public Receiver(String filePath) {
+        reentrantLockOnWrite.lock();
         collection.initialize(filePath);
+        reentrantLockOnWrite.unlock();
     }
 
-    public synchronized void add(Object obj) {
-        System.out.println("-------------------------Didn't fall--------------------------'-1'");
+    public void add(Object obj) {
+        reentrantLockOnWrite.lock();
         collection.add(getStoredType().cast(obj));
+        reentrantLockOnWrite.unlock();
     }
 
-    public synchronized void update(long id, Object newObject) {
+    public void update(long id, Object newObject) {
         if (id <= 0) throw new NumberFormatException("Incorrect argument value");
         if(!(newObject instanceof Dragon dragon)) throw new ClassCastException();
 
+        reentrantLockOnWrite.lock();
         collection.update(id, dragon);
+        reentrantLockOnWrite.unlock();
+
     }
 
-    public synchronized void add(Object obj, long id) {
+    public void add(Object obj, long id) {
+        reentrantLockOnWrite.lock();
         try {
             if (id <= 0)
                 throw new NumberFormatException("Incorrect argument value");
@@ -40,26 +50,39 @@ public class Receiver {
             collection.add(getStoredType().cast(obj));
 
         } catch (NoSuchFieldException | IllegalArgumentException impossible) {}
+        reentrantLockOnWrite.unlock();
     }
 
-    public synchronized void clear() {
+    public void clear() {
+        reentrantLockOnWrite.lock();
         collection.clear();
+        reentrantLockOnWrite.unlock();
     }
 
-    public synchronized String getInfo() {
-        return collection.getInfo();
+    public String getInfo() {
+        reentrantLockOnRead.lock();
+        String result = collection.getInfo();
+        reentrantLockOnRead.unlock();
+        return result;
     }
 
-    public synchronized String getFormattedCollection(Comparator<Dragon> sorter) {
-        return Formatter.format(collection.getElements(sorter), collection.getClT());
+    public String getFormattedCollection(Comparator<Dragon> sorter) {
+        reentrantLockOnRead.lock();
+        String result = Formatter.format(collection.getElements(sorter), collection.getClT());
+        reentrantLockOnRead.unlock();
+        return result;
     }
 
-    public synchronized String getFormattedCollection() {
-        return getFormattedCollection(Comparator.reverseOrder());
+    public String getFormattedCollection() {
+        reentrantLockOnRead.lock();
+        String result = getFormattedCollection(Comparator.reverseOrder());
+        reentrantLockOnRead.unlock();
+        return result;
     }
 
-    public synchronized <T> Integer countCompareToValueByField(String fieldName, Comparable value, Comparator<Comparable<T>> comparator)
+    public <T> Integer countCompareToValueByField(String fieldName, Comparable value, Comparator<Comparable<T>> comparator)
             throws NumberFormatException, NoSuchFieldException {
+        reentrantLockOnRead.lock();
         int counter = 0;
         Field field = collection.getClT().getDeclaredField(fieldName);
         field.setAccessible(true);
@@ -74,6 +97,7 @@ public class Receiver {
             } catch (IllegalAccessException impossible) {
             }
         }
+        reentrantLockOnRead.unlock();
         return counter;
     }
 
@@ -81,42 +105,50 @@ public class Receiver {
         collection.save();
     }
 
-    public synchronized Dragon getElementByFieldValue(String fieldName, Object value)
+    public Dragon getElementByFieldValue(String fieldName, Object value)
             throws NumberFormatException, NoSuchFieldException {
-
+        reentrantLockOnRead.lock();
         Field idField;
         idField = collection.getClT().getDeclaredField(fieldName);
         idField.setAccessible(true);
         for (Dragon e : collection.getElements()) {
             try {
                 if (idField.get(e).equals(value)) {
-                    System.out.println(e);
+                    reentrantLockOnRead.unlock();
                     return e;
                 }
             } catch (IllegalAccessException ex) {
             }
         }
+        reentrantLockOnRead.unlock();
         return null;
     }
 
-    public synchronized Dragon getElementByIndex(int index) {
-        return collection.get(index);
+    public Dragon getElementByIndex(int index) {
+        reentrantLockOnRead.lock();
+        Dragon result = collection.get(index);
+        reentrantLockOnRead.unlock();
+        return result;
     }
 
-    public synchronized int collectionSize() {
-        return collection.size();
+    public int collectionSize() {
+        reentrantLockOnRead.unlock();
+        int result = collection.size();
+        return result;
     }
 
-    public synchronized boolean removeFromCollection(Object o) {
-        return collection.remove(o);
+    public boolean removeFromCollection(Object o) {
+        reentrantLockOnWrite.lock();
+        boolean result = collection.remove(o);
+        reentrantLockOnWrite.unlock();
+        return result;
     }
 
-    // Needed to be fixed.
-    public synchronized String removeOn(Predicate<Dragon> filter, boolean showRemoved) {
+    public String removeOn(Predicate<Dragon> filter, boolean showRemoved) {
         if (collection.size() == 0) {
             return "Cannot remove since the collection is empty";
         }
-
+        reentrantLockOnWrite.lock();
         List<Dragon> removed = new LinkedList<>();
         for (Dragon element : collection.getElements()) {
             if (filter.test(element)) {
@@ -126,13 +158,15 @@ public class Receiver {
         }
 
         if (showRemoved) {
-            return Formatter.format(removed, collection.getClT());
+            String result = Formatter.format(removed, collection.getClT());
+            reentrantLockOnWrite.unlock();
+            return result;
         }
 
         return "";
     }
 
-    public synchronized String removeByIndex(int index, boolean showRemoved) {
+    public String removeByIndex(int index, boolean showRemoved) {
         if (collection.size() == 0) {
             return "Cannot remove since the collection is empty";
         }
@@ -150,6 +184,7 @@ public class Receiver {
     }
 
     public Map<Object, Integer> groupByField(String fieldName) throws NoSuchFieldException {
+        reentrantLockOnRead.lock();
         Map<Object, Integer> groups = new HashMap<>();
         Field field = collection.getClT().getDeclaredField(fieldName);
         field.setAccessible(true);
@@ -165,6 +200,7 @@ public class Receiver {
             } catch (IllegalAccessException impossible) {
             }
         }
+        reentrantLockOnRead.unlock();
         return groups;
     }
 }

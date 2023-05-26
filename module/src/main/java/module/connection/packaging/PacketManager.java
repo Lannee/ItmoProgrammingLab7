@@ -77,11 +77,9 @@ public class PacketManager {
         byte[] data = new byte[0];
         try {
             objOS = new ObjectOutputStream(byteOS);
-
             objOS.writeObject(object);
             data = byteOS.toByteArray();
         } catch (IOException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
         return data;
