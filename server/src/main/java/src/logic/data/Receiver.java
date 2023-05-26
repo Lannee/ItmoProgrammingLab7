@@ -1,10 +1,8 @@
 package src.logic.data;
 
-import module.logic.exceptions.CannotCreateObjectException;
 import module.stored.Dragon;
 import src.utils.Formatter;
 import module.utils.ObjectUtils;
-import src.utils.StringConverter;
 
 import java.lang.reflect.Field;
 import java.util.*;
@@ -27,7 +25,6 @@ public class Receiver {
     }
 
     public synchronized void update(long id, Object newObject) {
-        System.out.println("here");
         if (id <= 0) throw new NumberFormatException("Incorrect argument value");
         if(!(newObject instanceof Dragon dragon)) throw new ClassCastException();
 

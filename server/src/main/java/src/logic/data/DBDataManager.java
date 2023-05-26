@@ -4,6 +4,7 @@ import module.stored.Color;
 import module.stored.Coordinates;
 import module.stored.Dragon;
 import module.stored.Person;
+import module.utils.PGParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,6 +26,7 @@ public class DBDataManager implements DataManager<Dragon> {
     private Connection dbConnection;
 
     private final String dbURL;
+    private PGParser pgParser;
 
     DBDataManager(String url) {
         dbURL = url;
@@ -33,8 +35,10 @@ public class DBDataManager implements DataManager<Dragon> {
     @Override
     public void initialize(String path) {
         try {
+            pgParser = new PGParser(path);
+
             Class.forName("org.postgresql.Driver");
-            dbConnection = DriverManager.getConnection(dbURL, getUserName(path), getPassword(path));
+            dbConnection = DriverManager.getConnection(dbURL, pgParser.getUserName(), pgParser.getPassword());
         } catch (SQLException | ClassNotFoundException | FileNotFoundException e) {
             logger.error(e.getMessage());
             return;
@@ -82,28 +86,6 @@ public class DBDataManager implements DataManager<Dragon> {
             throw new RuntimeException(e);
         }
 
-    }
-
-    private String getUserName(String filePath) throws FileNotFoundException {
-        return parsePgpass(filePath, 3);
-    }
-
-    private String getPassword(String filePath) throws FileNotFoundException {
-        return parsePgpass(filePath, 4);
-    }
-
-    private String parsePgpass(String filePath, int elementID) throws FileNotFoundException {
-        try(BufferedReader reader = new BufferedReader(
-                new InputStreamReader(
-                        new FileInputStream(filePath)))) {
-
-            return reader.readLine().split(":")[elementID];
-
-        } catch (IOException e) {
-            if(e instanceof FileNotFoundException)
-                throw new FileNotFoundException(e.getMessage());
-            throw new RuntimeException(e);
-        }
     }
 
     @Override
