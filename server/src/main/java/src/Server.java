@@ -53,10 +53,11 @@ public class Server {
 
         try {
             connection = new DatagramConnection(SERVER_PORT, true);
-            invoker = new Invoker(connection,
+            authorization = new Authorization(filePath, "jdbc:postgresql://localhost:5432/studs");
+
+            invoker = new Invoker(connection, authorization,
                     new Receiver(filePath));
 
-            authorization = new Authorization(filePath, "jdbc:postgresql://localhost:5432/studs");
             logger.info("Invoker and Receiver started.");
         } catch (SocketException e) {
             logger.error("This address is currently in use.");

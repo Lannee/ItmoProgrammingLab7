@@ -1,11 +1,13 @@
 package src.authorization;
 
+import module.logic.exceptions.FileFormatException;
 import module.utils.PGParser;
 
 import java.io.FileNotFoundException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.*;
+import java.util.Random;
 
 import static src.authorization.AuthorizationQueries.*;
 
@@ -25,7 +27,7 @@ public class Authorization {
             connection = DriverManager.getConnection(dbURL, pgParser.getUserName(), pgParser.getPassword());
 
             md5 = MessageDigest.getInstance("DM5");
-        } catch (NoSuchAlgorithmException ignored) {}
+        } catch (NoSuchAlgorithmException | FileFormatException ignored) {}
         catch (ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
@@ -43,21 +45,22 @@ public class Authorization {
         }
     }
 
-    public boolean isLogingSusseccfully(String user, String password) {
-        String passwordHash = getPasswordHash(user, password);
+    public LoginStatus loginUser(String user, String password) {
+        String passwordHash = getPasswordHash(getSalt(user), password);
 
         try {
             PreparedStatement loggingStatement = connection.prepareStatement(passwordConfirmation);
             loggingStatement.setString(1, user);
             loggingStatement.setString(2, passwordHash);
             ResultSet isLoginSuccessfully = loggingStatement.executeQuery();
-            return isLoginSuccessfully.next();
+            return isLoginSuccessfully.next() ? LoginStatus.SUCCESSFUL : LoginStatus.INVALID_PASSWORD;
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            e.printStackTrace();
+            return LoginStatus.FAILED;
         }
     }
 
-    public String getSalt(String user) {
+    private String getSalt(String user) {
         try {
             PreparedStatement saltStatement = connection.prepareStatement(getSalt);
             saltStatement.setString(1, user);
@@ -73,10 +76,38 @@ public class Authorization {
         }
     }
 
-    public String getPasswordHash(String user, String password) {
-        String salt = getSalt(user);
+    private String getPasswordHash(String salt, String password) {
         md5.update((paper + password + salt).getBytes());
         return new String(md5.digest());
     }
 
+    public RegistrationStatus registerUser(String user, String password) {
+        if(isUserExists(user)) return RegistrationStatus.USER_ALREADY_EXISTS;
+        if(password.length() < 5) return RegistrationStatus.SHORT_PASSWORD;
+
+        String salt = generateSalt();
+        String passwordHash = getPasswordHash(salt, password);
+
+        try {
+            PreparedStatement registrationStatement = connection.prepareStatement(registerUser);
+            registrationStatement.setString(1, user);
+            registrationStatement.setString(2, passwordHash);
+            registrationStatement.setString(3, salt);
+            if(registrationStatement.executeUpdate() != 0) {
+                return RegistrationStatus.SUCCESSFUL;
+            } else {
+                return RegistrationStatus.FAILED;
+            }
+
+        } catch (SQLException e) {
+            return RegistrationStatus.FAILED;
+        }
+    }
+
+    private static String generateSalt() {
+        byte[] saltBytes = new byte[4];
+        new Random().nextBytes(saltBytes);
+
+        return new String(saltBytes);
+    }
 }

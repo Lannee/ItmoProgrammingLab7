@@ -24,6 +24,9 @@ public class Client {
 
     private IConnection connection;
 
+    private String userName;
+    private String userPassword;
+
     public final static String invite = ">>>";
 
     private final static String logo = """
@@ -57,6 +60,12 @@ public class Client {
     }
 
     public void runClient() {
+//        boolean isLogged = false;
+//
+//        while(!isLogged) {
+//
+//        }
+
         if (running) {
             logger.info("Client started.");
             out.print("Hello, Welcome to\n");

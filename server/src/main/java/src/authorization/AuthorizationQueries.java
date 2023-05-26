@@ -20,4 +20,9 @@ public class AuthorizationQueries {
             WHERE login = ?;
             """;
 
+    public static final String registerUser = """
+            INSERT INTO "user" (login, password, salt)
+            VALUES (?, ?, ?);
+            """;
+
 }

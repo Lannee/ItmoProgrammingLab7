@@ -7,18 +7,17 @@ import module.connection.requestModule.Request;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import src.Server;
+import src.authorization.Authorization;
 import src.logic.data.Receiver;
 
 import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.regex.MatchResult;
 import java.util.regex.Pattern;
 
 public class Invoker {
 
-    private final Map<String, Command> declaredClientCommands = new TreeMap<>();
-
+    private final Map<String, Command> declaredAuthenticatedClientCommands = new TreeMap<>();
+    private final Map<String, Command> declaredNonAuthenticatedClientCommands = new TreeMap<>();
     private final Map<String, Command> declaredServerCommands = new TreeMap<>();
 
     private final Receiver receiver;
@@ -33,28 +32,32 @@ public class Invoker {
 
     private static final Logger logger = LoggerFactory.getLogger(Server.class);
 
-    public Invoker(IConnection connection, Receiver receiver) {
+    public Invoker(IConnection connection, Authorization authorization, Receiver receiver) {
         this.connection = connection;
         this.receiver = receiver;
-        declaredClientCommands.put("help", new Help(this));
-        declaredClientCommands.put("info", new Info(receiver));
-        declaredClientCommands.put("update", new Update(connection, receiver));
-        declaredClientCommands.put("execute_script", new ExecuteScript(this));
-        declaredClientCommands.put("add", new Add(receiver));
-        declaredClientCommands.put("clear", new Clear(receiver));
-        declaredClientCommands.put("exit", new Exit(receiver));
+        declaredAuthenticatedClientCommands.put("help", new Help(this));
+        declaredAuthenticatedClientCommands.put("info", new Info(receiver));
+        declaredAuthenticatedClientCommands.put("update", new Update(connection, receiver));
+        declaredAuthenticatedClientCommands.put("execute_script", new ExecuteScript(this));
+        declaredAuthenticatedClientCommands.put("add", new Add(receiver));
+        declaredAuthenticatedClientCommands.put("clear", new Clear(receiver));
+        declaredAuthenticatedClientCommands.put("exit", new Exit(receiver));
 //        declaredClientCommands.put("save", new Save(receiver));
-        declaredClientCommands.put("show", new Show(receiver));
-        declaredClientCommands.put("remove_first", new RemoveFirst(receiver));
-        declaredClientCommands.put("remove_head", new RemoveHead(receiver));
-        declaredClientCommands.put("remove_by_id", new RemoveById(receiver));
-        declaredClientCommands.put("print_ascending", new PrintAscending(receiver));
-        declaredClientCommands.put("remove_greater", new RemoveGreater(receiver));
-        declaredClientCommands.put("count_greater_than_weight", new CountGreaterThanWeight(receiver));
-        declaredClientCommands.put("group_counting_by_id", new GroupCountingById(receiver));
+        declaredAuthenticatedClientCommands.put("show", new Show(receiver));
+        declaredAuthenticatedClientCommands.put("remove_first", new RemoveFirst(receiver));
+        declaredAuthenticatedClientCommands.put("remove_head", new RemoveHead(receiver));
+        declaredAuthenticatedClientCommands.put("remove_by_id", new RemoveById(receiver));
+        declaredAuthenticatedClientCommands.put("print_ascending", new PrintAscending(receiver));
+        declaredAuthenticatedClientCommands.put("remove_greater", new RemoveGreater(receiver));
+        declaredAuthenticatedClientCommands.put("count_greater_than_weight", new CountGreaterThanWeight(receiver));
+        declaredAuthenticatedClientCommands.put("group_counting_by_id", new GroupCountingById(receiver));
         Command exitClient = new ExitClient();
         exitClient.setConnection(connection);
-        declaredClientCommands.put("exit", exitClient);
+        declaredAuthenticatedClientCommands.put("exit", exitClient);
+
+        declaredNonAuthenticatedClientCommands.put("exit", exitClient);
+        declaredNonAuthenticatedClientCommands.put("login", new LoginCommand(authorization));
+        declaredNonAuthenticatedClientCommands.put("register", new RegisterCommand(authorization));
 
         declaredServerCommands.put("exit", new Exit(receiver));
         declaredServerCommands.put("save", new Save(receiver));
@@ -72,7 +75,7 @@ public class Invoker {
 
     public synchronized String commandsInfo() {
         StringBuilder out = new StringBuilder();
-        declaredClientCommands.forEach((key, value) -> {
+        declaredAuthenticatedClientCommands.forEach((key, value) -> {
             out.append(key);
             if(value.args().length > 0) {
                 String enteredByUserArguments = String.join(
@@ -132,9 +135,9 @@ public class Invoker {
     }
 
     public synchronized String executeClientCommand(String command, Object[] args) {
-        if (declaredClientCommands.containsKey(command)) {
+        if (declaredAuthenticatedClientCommands.containsKey(command)) {
             logger.info("Command executing.");
-            return declaredClientCommands.get(command).execute(args);
+            return declaredAuthenticatedClientCommands.get(command).execute(args);
         } else {
             logger.error("Unknown command.");
             return "Unknown command " + command + ". Type help to get information about all commands.";
@@ -150,8 +153,8 @@ public class Invoker {
     }
 
     public synchronized List<CommandDescription> getCommandsDescriptions() {
-        List<CommandDescription> commandDescriptions = new ArrayList<>(declaredClientCommands.size());
-        declaredClientCommands.forEach((u, v) -> {
+        List<CommandDescription> commandDescriptions = new ArrayList<>(declaredAuthenticatedClientCommands.size());
+        declaredAuthenticatedClientCommands.forEach((u, v) -> {
             commandDescriptions.add(
                     new CommandDescription(u, v.args(), v.getCommandType()));
         });

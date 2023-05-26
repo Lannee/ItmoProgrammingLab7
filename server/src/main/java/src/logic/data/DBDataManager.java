@@ -1,5 +1,6 @@
 package src.logic.data;
 
+import module.logic.exceptions.FileFormatException;
 import module.stored.Color;
 import module.stored.Coordinates;
 import module.stored.Dragon;
@@ -39,7 +40,7 @@ public class DBDataManager implements DataManager<Dragon> {
 
             Class.forName("org.postgresql.Driver");
             dbConnection = DriverManager.getConnection(dbURL, pgParser.getUserName(), pgParser.getPassword());
-        } catch (SQLException | ClassNotFoundException | FileNotFoundException e) {
+        } catch (SQLException | ClassNotFoundException | FileNotFoundException | FileFormatException e) {
             logger.error(e.getMessage());
             return;
         }
