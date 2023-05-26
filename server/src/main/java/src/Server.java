@@ -46,8 +46,7 @@ public class Server {
     public void start(String[] args) {
 
         logger.info("Starting server.");
-//        String filePath = getFilePath(args);
-         String filePath = "C:\\Users\\uncle\\OneDrive\\Desktop\\.pgpass";
+        String filePath = getFilePath(args);
 
         try {
             connection = new DatagramConnection(SERVER_PORT, true);
@@ -97,7 +96,8 @@ public class Server {
                         executorServiceForExecutingCommands.submit(() -> {
                             String result = invoker.parseRequest(request);
                             if (result.equals("WAITING")) {
-                                connection.send(clientHost, clientPort, new CommandResponse(result, ResponseStatus.WAITING));
+                                connection.send(clientHost, clientPort,
+                                        new CommandResponse(result, ResponseStatus.WAITING));
                             } else {
                                 connection.send(clientHost, clientPort, new CommandResponse(result));
                                 logger.info("Response sent.");
