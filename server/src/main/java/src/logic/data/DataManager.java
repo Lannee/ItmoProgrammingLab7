@@ -19,20 +19,20 @@ public interface DataManager<T extends Comparable<? super T>> {
      * Adds element to the collection
      * @param element
      */
-    void add(T element);
+    void add(T element, int userId);
 
-    void update(long id, T newObject);
+    void update(long id, T newObject, int userId);
 
     /**
      * Add all specified elements to the collection
      * @param elements
      */
-    void addAll(Collection<T> elements);
+    void addAll(Collection<T> elements, int userId);
 
     /**
      * Clears collection
      */
-    void clear();
+    void clear(int userId);
 
     /**
      *
@@ -46,7 +46,7 @@ public interface DataManager<T extends Comparable<? super T>> {
      * @param o
      * @return true - if element was removed successfully, else - false
      */
-    boolean remove(Object o);
+    boolean remove(Object o, int userId);
 
     /**
      * @return size of the collection

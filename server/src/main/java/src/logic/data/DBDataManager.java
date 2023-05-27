@@ -95,7 +95,7 @@ public class DBDataManager implements DataManager<Dragon> {
     }
 
     @Override
-    public void add(Dragon element) {
+    public void add(Dragon element, int userId) {
         System.out.println("-------------------------Didn't fall--------------------------0");
 
         try {
@@ -168,7 +168,7 @@ public class DBDataManager implements DataManager<Dragon> {
     }
 
     @Override
-    public void update(long id, Dragon newObject) {
+    public void update(long id, Dragon newObject, int userId) {
         System.out.println("here2");
         try {
             dbConnection.setAutoCommit(false);
@@ -267,8 +267,8 @@ public class DBDataManager implements DataManager<Dragon> {
     }
 
     @Override
-    public void addAll(Collection<Dragon> elements) {
-        elements.forEach(this::add);
+    public void addAll(Collection<Dragon> elements, int userId) {
+        elements.forEach(e -> add(e, userId));
     }
 
     @Override
@@ -282,7 +282,7 @@ public class DBDataManager implements DataManager<Dragon> {
     }
 
     @Override
-    public boolean remove(Object o) {
+    public boolean remove(Object o, int userId) {
         if(!(o instanceof Dragon dragon)) throw new ClassCastException();
         return collection.remove(o);
     }
@@ -372,6 +372,12 @@ public class DBDataManager implements DataManager<Dragon> {
             commitAdd.executeUpdate();
         } catch (SQLException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    public boolean dragonUserMatch(int userId, int dragonId) {
+        try {
+            PreparedStatement match = dbConnection.prepareStatement()
         }
     }
 }
