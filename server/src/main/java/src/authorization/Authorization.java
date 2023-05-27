@@ -101,6 +101,7 @@ public class Authorization {
             }
 
         } catch (SQLException e) {
+            e.printStackTrace();
             return RegistrationStatus.FAILED;
         }
     }

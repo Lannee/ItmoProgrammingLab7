@@ -151,7 +151,11 @@ public class Invoker {
                 if(userName.equals("")) return "Invalid user name";
                 if(userPassword.equals("")) return "Password cannot be blank";
 
-                response = sendRequestAndGetResponse(RequestFactory.createRequest(commandName, args, TypeOfRequest.CONFIRMATION, userName, userPassword));
+                String[] newArgs = new String[2];
+                newArgs[0] = userName;
+                newArgs[1] = userPassword;
+                response = sendRequestAndGetResponse(RequestFactory.createRequest(commandName, newArgs, TypeOfRequest.CONFIRMATION, null, null));
+
                 if (response.getResponse().equals("Login successful")) {
                     isAuthed = true;
                 } else {
