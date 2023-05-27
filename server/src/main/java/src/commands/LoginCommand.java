@@ -19,7 +19,7 @@ public class LoginCommand implements Command {
     }
 
     @Override
-    public String execute(Object[] args, String userName) {
+    public String execute(Object[] args, int userId) {
         if(!authorization.isUserExists((String) args[0])) {
             return "User does not exists";
         }

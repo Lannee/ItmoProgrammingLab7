@@ -20,7 +20,7 @@ public class RemoveById implements Command {
     }
 
     @Override
-    public String execute(Object[] args, String userName) {
+    public String execute(Object[] args, int userId) {
         checkArgsConformity(args);
 
         try {
@@ -28,7 +28,7 @@ public class RemoveById implements Command {
             Long id = (Long) args[0];
             Object obj = receiver.getElementByFieldValue(args()[0].getArgumentName(), id);
             if(obj != null) {
-                receiver.removeOn(e -> e == obj, false, userName);
+                receiver.removeOn(e -> e == obj, false, userId);
                 return "Object with " + args()[0] + " " + id + " was successfully removed";
             } else {
                 return "Unable to remove element from the collection. No element with such " + args()[0];

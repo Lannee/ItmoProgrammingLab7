@@ -30,24 +30,24 @@ public class Receiver {
         reentrantLockOnWrite.unlock();
     }
 
-    public void update(long id, Object newObject) {
+    public void update(long id, Object newObject, int userId) {
         if (id <= 0) throw new NumberFormatException("Incorrect argument value");
         if(!(newObject instanceof Dragon dragon)) throw new ClassCastException();
 
         reentrantLockOnWrite.lock();
-        collection.update(id, dragon);
+        collection.update(id, dragon, userId);
         reentrantLockOnWrite.unlock();
 
     }
 
-    public void add(Object obj, long id) {
+    public void add(Object obj, long id, int userId) {
         reentrantLockOnWrite.lock();
         try {
             if (id <= 0)
                 throw new NumberFormatException("Incorrect argument value");
 
             ObjectUtils.setFieldValue(obj, "id", id);
-            collection.add(getStoredType().cast(obj));
+            collection.add(getStoredType().cast(obj), userId);
 
         } catch (NoSuchFieldException | IllegalArgumentException impossible) {}
         reentrantLockOnWrite.unlock();
@@ -55,7 +55,7 @@ public class Receiver {
 
     public void clear(int userId) {
         reentrantLockOnWrite.lock();
-        collection.clear();
+        collection.clear(userId);
         reentrantLockOnWrite.unlock();
     }
 
@@ -137,14 +137,14 @@ public class Receiver {
         return result;
     }
 
-    public boolean removeFromCollection(Object o) {
+    public boolean removeFromCollection(Object o, int userId) {
         reentrantLockOnWrite.lock();
-        boolean result = collection.remove(o);
+        boolean result = collection.remove(o, userId);
         reentrantLockOnWrite.unlock();
         return result;
     }
 
-    public String removeOn(Predicate<Dragon> filter, boolean showRemoved) {
+    public String removeOn(Predicate<Dragon> filter, boolean showRemoved, int userId) {
         if (collection.size() == 0) {
             return "Cannot remove since the collection is empty";
         }
@@ -153,7 +153,7 @@ public class Receiver {
         for (Dragon element : collection.getElements()) {
             if (filter.test(element)) {
                 removed.add(element);
-                removeFromCollection(element);
+                removeFromCollection(element, userId);
             }
         }
 
@@ -166,7 +166,7 @@ public class Receiver {
         return "";
     }
 
-    public String removeByIndex(int index, boolean showRemoved) {
+    public String removeByIndex(int index, boolean showRemoved, int userId) {
         if (collection.size() == 0) {
             return "Cannot remove since the collection is empty";
         }
@@ -176,7 +176,7 @@ public class Receiver {
         }
 
         Object obj = getElementByIndex(index);
-        return removeOn(e -> e == obj, showRemoved);
+        return removeOn(e -> e == obj, showRemoved, userId);
     }
 
     public Class<Dragon> getStoredType() {

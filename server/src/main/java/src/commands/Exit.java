@@ -21,7 +21,7 @@ public class Exit implements Command {
     }
 
     @Override
-    public String execute(Object[] args, String userName) {
+    public String execute(Object[] args, int userId) {
         checkArgsConformity(args);
         receiver.saveCollection();
         System.exit(0);

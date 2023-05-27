@@ -145,10 +145,10 @@ public class Invoker {
     }
 
     private String executeServerCommand(String command, String[] args) {
-        String userName = ""; 
+        int userId = -1; 
         if (declaredServerCommands.containsKey(command)) {
             logger.info("Command executing.");
-            return declaredServerCommands.get(command).execute(args, userName);
+            return declaredServerCommands.get(command).execute(args, userId);
         } else {
             logger.error("Unknown command.");
             return "Unknown command " + command + ". Type help to get information about all commands.\n";

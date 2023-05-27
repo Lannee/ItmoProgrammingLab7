@@ -6,7 +6,11 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.function.Consumer;
 
 /**
@@ -62,25 +66,25 @@ public abstract class FileDataManager<T extends Comparable<? super T>> implement
     }
 
     @Override
-    public void add(T element) {
+    public void add(T element, int userId) {
         collection.add(element);
         sort();
         modification = LocalDateTime.now();
     }
 
     @Override
-    public void update(long id, T newObject) {
+    public void update(long id, T newObject, int userId) {
 
     }
 
     @Override
-    public void addAll(Collection<T> collection) {
+    public void addAll(Collection<T> collection, int userId) {
         collection.addAll(collection);
         sort();
         modification = LocalDateTime.now();
     }
     @Override
-    public void clear() {
+    public void clear(int userId) {
         collection.clear();
     }
 
@@ -90,7 +94,7 @@ public abstract class FileDataManager<T extends Comparable<? super T>> implement
     }
 
     @Override
-    public boolean remove(Object o) {
+    public boolean remove(Object o, int userId) {
         for(T element : collection) {
             if(element.equals(o)) {
                 collection.remove(o);

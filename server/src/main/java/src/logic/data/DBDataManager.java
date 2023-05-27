@@ -96,8 +96,6 @@ public class DBDataManager implements DataManager<Dragon> {
 
     @Override
     public void add(Dragon element, int userId) {
-        System.out.println("-------------------------Didn't fall--------------------------0");
-
         try {
             dbConnection.setAutoCommit(false);
             Savepoint savepoint = dbConnection.setSavepoint();
@@ -121,7 +119,6 @@ public class DBDataManager implements DataManager<Dragon> {
             if(killer != null) {
                 killer_id = addPersonToDB(killer);
             }
-            System.out.println("-------------------------Didn't fall--------------------------1");
 
             // creating dragon
             PreparedStatement dragonStatement = dbConnection.prepareStatement(dragonAddStatement);
@@ -139,11 +136,9 @@ public class DBDataManager implements DataManager<Dragon> {
 
             if(killer_id != null) dragonStatement.setInt(7, killer_id);
             else dragonStatement.setNull(7, Types.INTEGER);
-            System.out.println("-------------------------Didn't fall--------------------------2");
 
             try {
                 if (dragonStatement.executeUpdate() > 0) {
-                    System.out.println("-------------------------Didn't fall--------------------------3 ");
                     dbConnection.commit();
                     PreparedStatement dragonCurrval = dbConnection.prepareStatement(currvalStatement);
                     dragonCurrval.setString(1, "dragon_id_seq");
@@ -169,7 +164,6 @@ public class DBDataManager implements DataManager<Dragon> {
 
     @Override
     public void update(long id, Dragon newObject, int userId) {
-        System.out.println("here2");
         try {
             dbConnection.setAutoCommit(false);
             Savepoint savepoint = dbConnection.setSavepoint();
@@ -248,7 +242,7 @@ public class DBDataManager implements DataManager<Dragon> {
                 if (dragonStatement.executeUpdate() > 0) {
                     dbConnection.commit();
                     Dragon oldObject = getDragonById(id);
-                    remove(oldObject);
+                    remove(oldObject, userId);
                     newObject.setId(id);
                     addToCollection(newObject);
                     sort();
@@ -272,7 +266,7 @@ public class DBDataManager implements DataManager<Dragon> {
     }
 
     @Override
-    public void clear() {
+    public void clear(int userId) {
 
     }
 

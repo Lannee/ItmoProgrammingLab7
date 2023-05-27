@@ -65,7 +65,7 @@ public class CSVFileDataManager<T extends Comparable<? super T>> extends FileDat
                 for (String[] values : csvContent) {
                     try {
                         add(getClT()
-                                .cast(createObject(getClT(), headers, values, getElements())));
+                                .cast(createObject(getClT(), headers, values, getElements())), 0);
 
                     } catch (ReflectiveOperationException e) {
                         Server.out.print("Unable to create an object\n");

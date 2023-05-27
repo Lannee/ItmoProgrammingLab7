@@ -23,10 +23,10 @@ public class RemoveGreater implements Command {
     }
 
     @Override
-    public String execute(Object[] args, String userName) {
+    public String execute(Object[] args, int userId) {
 //        checkArgsConformity(args);
         Object obj = args[0];
-        return receiver.removeOn(e -> e.compareTo(receiver.getStoredType().cast(obj)) > 0, false, userName);
+        return receiver.removeOn(e -> e.compareTo(receiver.getStoredType().cast(obj)) > 0, false, userId);
 //        return "";
     }
 

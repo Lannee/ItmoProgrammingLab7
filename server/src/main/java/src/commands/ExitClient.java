@@ -14,7 +14,7 @@ public class ExitClient implements Command {
     private IConnection connection;
 
     @Override
-    public String execute(Object[] args, String userName) {
+    public String execute(Object[] args, int userId) {
         checkArgsConformity(args);
         return "";
     }

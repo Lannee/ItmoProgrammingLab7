@@ -19,7 +19,7 @@ public class RegisterCommand implements Command {
     }
 
     @Override
-    public String execute(Object[] args, String userName) {
+    public String execute(Object[] args, int userId) {
         return authorization.registerUser((String) args[0], (String) args[1]).getDescription();
     }
 
