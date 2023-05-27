@@ -144,12 +144,21 @@ public class Invoker {
             case SCRIPT_ARGUMENT_COMMAND:
                 return execute_script((String) args[0]);
             case AUTHENTICATION_COMMAND:
+                Client.out.print("Enter user name : ");
+                userName = Client.in.readLine().trim();
+                Client.out.print("Enter password : ");
+                userPassword = Client.in.readLine().trim();
+                if(userName.equals("")) return "Invalid user name";
+                if(userPassword.equals("")) return "Password cannot be blank";
+
                 response = sendRequestAndGetResponse(RequestFactory.createRequest(commandName, args, TypeOfRequest.CONFIRMATION, userName, userPassword));
                 if (response.getResponse().equals("Login successful")) {
                     isAuthed = true;
-                    this.userName = args[0].toString();
-                    this.userPassword = args[1].toString();
+                } else {
+                    this.userName = null;
+                    this.userPassword = null;
                 }
+
                 return response.getResponse();
             default:
                 // If command is NON_ARGUMENT or LINE_ARGUMENT
