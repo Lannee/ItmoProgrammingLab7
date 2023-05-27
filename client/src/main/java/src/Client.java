@@ -24,9 +24,6 @@ public class Client {
 
     private IConnection connection;
 
-    private String userName;
-    private String userPassword;
-
     public final static String invite = ">>>";
 
     private final static String logo = """
@@ -60,31 +57,28 @@ public class Client {
     }
 
     public void runClient() {
-        boolean isLogged = false;
-        //
-        // while(!isLogged) {
-        //
-        // }
 
         if (running) {
-            if (isLogged == true) {
-
-            }
             logger.info("Client started.");
             out.print("Hello, Welcome to\n");
             out.print(logo);
             out.print("Type \"help\" to get the information about all commands\n");
             String line;
             logger.info("Client is ready to take commands and send them on server.");
+
+            // while (!isLogged) {
+
+            // }
             while (running) {
                 try {
                     out.print(invite + " ");
                     line = in.readLine();
                     logger.info("User typed: '{}'", line.trim());
                     try {
-                        String commandResult = invoker.parseCommand(userName, userPassword, line);
-                        // if (commandResult == "Login successful" || commandResult == "Registration successful") {
-                        //     isLogged = true;
+                        String commandResult = invoker.parseCommand(line);
+                        // if (commandResult == "Login successful" || commandResult == "Registration
+                        // successful") {
+                        // isLogged = true;
                         // }
                         out.print(commandResult.equals("") ? "" : commandResult);
                     } catch (NullPointerException ne) {

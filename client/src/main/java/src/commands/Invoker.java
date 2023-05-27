@@ -40,6 +40,15 @@ public class Invoker {
 
     private Callable caller;
 
+    private boolean isAuthed = false;
+
+    public boolean isAuthed() {
+        return isAuthed;
+    }
+
+    private String userName;
+    private String userPassword;
+
     public Invoker(IConnection connection) throws IOException, InvalidResponseException {
         this.connection = connection;
         commands = new CommandsHandler(connection);
@@ -47,9 +56,9 @@ public class Invoker {
         logger.info("Invoker initialized.");
     }
 
-    public String parseCommand(String userName, String userPassword, String line) throws NullPointerException {
+    public String parseCommand(String line) throws NullPointerException {
         line = line.trim();
-        if(line.equals(""))
+        if (line.equals(""))
             return "";
 
         caller = new ArgumentCaller();
@@ -60,19 +69,26 @@ public class Invoker {
         return commandResult.equals("") ? "" : commandResult + "\n";
     }
 
-    public String validateCommand(String commandName, String[] args, String userName, String userPassword) throws NullPointerException {
-        CommandDescription commandDescription = commands.getCommandDescription(commandName);
-        if(commandDescription != null) {
+    public String validateCommand(String commandName, String[] args, String userName, String userPassword)
+            throws NullPointerException {
+        CommandDescription commandDescription;
+        if (isAuthed) {
+            commandDescription = commands.getCommandDescriptionForLoggedUsers(commandName);
+        } else {
+            commandDescription = commands.getCommandDescriptionForUnloggedUsers(commandName);
+        }
+        if (commandDescription != null) {
             checkExit(commandName, args, userName, userPassword);
-            CommandArgument[] arguments  = commandDescription.getArguments();
+            CommandArgument[] arguments = commandDescription.getArguments();
 
-            if(args.length != Arrays.stream(arguments).filter(CommandArgument::isEnteredByUser).count()) return "Invalid number of arguments.";
+            if (args.length != Arrays.stream(arguments).filter(CommandArgument::isEnteredByUser).count())
+                return "Invalid number of arguments.";
 
             Object[] parsedArguments = new Object[args.length];
 
-            for(int i = 0; i < arguments.length; i++) {
+            for (int i = 0; i < arguments.length; i++) {
                 CommandArgument argument = arguments[i];
-                if(!argument.isEnteredByUser())
+                if (!argument.isEnteredByUser())
                     break;
                 try {
                     parsedArguments[i] = StringConverter.methodForType.get(argument.getArgumentType()).apply(args[i]);
@@ -123,12 +139,18 @@ public class Invoker {
                     }
                 }
                 response = sendRequestAndGetResponse(RequestFactory.createRequest(commandName, args, TypeOfRequest.CONFIRMATION, userName, userPassword));
-//                System.out.println("Почти вышел из switch");
                 return response.getResponse();
 
             case SCRIPT_ARGUMENT_COMMAND:
                 return execute_script((String) args[0]);
-
+            case AUTHENTICATION_COMMAND:
+                response = sendRequestAndGetResponse(RequestFactory.createRequest(commandName, args, TypeOfRequest.CONFIRMATION, userName, userPassword));
+                if (response.getResponse().equals("Login successful")) {
+                    isAuthed = true;
+                    this.userName = args[0].toString();
+                    this.userPassword = args[1].toString();
+                }
+                return response.getResponse();
             default:
                 // If command is NON_ARGUMENT or LINE_ARGUMENT
                 response = sendRequestAndGetResponse(RequestFactory.createRequest(commandName, args, TypeOfRequest.CONFIRMATION, userName, userPassword));
@@ -141,13 +163,12 @@ public class Invoker {
     }
 
     public void checkExit(String commandName, Object[] args, String userName, String userPassword) {
-        if(commandName.equals("exit")) {
-            CommandDescription commandDescription = commands.getCommandDescription(commandName);
+        if (commandName.equals("exit")) {
+            CommandDescription commandDescription = commands.getCommandDescriptionForUnloggedUsers(commandName);
             formRequestAndGetResponse(commandName, args, commandDescription, userName, userPassword);
             System.exit(0);
         }
     }
-
 
     public CommandResponse sendRequestAndGetResponse(Request request) {
         connection.send(connection.getRecipientHost(), connection.getRecipientPort(), request);
@@ -167,7 +188,6 @@ public class Invoker {
         return newArray;
     }
 
-
     private String[] parseArgs(String line) {
         return ARG_PAT.matcher(line)
                 .results()
@@ -177,13 +197,13 @@ public class Invoker {
     }
 
     public String execute_script(String file) {
-        if(!new File(file).exists()) {
+        if (!new File(file).exists()) {
             return "File \"" + file + "\" does not exist";
         }
 
-        if(files.containsKey(file)) {
+        if (files.containsKey(file)) {
             Integer value = files.get(file);
-            if(value >= recursionDepth) {
+            if (value >= recursionDepth) {
                 files.clear();
                 return "Recursion was cached. After executing file " + file + " " + recursionDepth + " times";
             }
@@ -191,37 +211,39 @@ public class Invoker {
             files.put(file, ++value);
         } else {
             files.put(file, 1);
-            if(files.size() == 1) {
+            if (files.size() == 1) {
                 int input = 0;
                 do {
                     try {
-                         Client.out.print("Please enter recursion depth (1, 50) : ");
-                         input = Integer.parseInt(Client.in.readLine());
-                    } catch (NumberFormatException ignored) {}
+                        Client.out.print("Please enter recursion depth (1, 50) : ");
+                        input = Integer.parseInt(Client.in.readLine());
+                    } catch (NumberFormatException ignored) {
+                    }
                 } while (input < 1 || input > 50);
                 recursionDepth = input;
             }
         }
 
-        try(InputStream fileInputStream = new FileInputStream(file);
-            Reader decoder = new InputStreamReader(fileInputStream, StandardCharsets.UTF_8);
-            BufferedReader lineReader = new BufferedReader(decoder)) {
+        try (InputStream fileInputStream = new FileInputStream(file);
+                Reader decoder = new InputStreamReader(fileInputStream, StandardCharsets.UTF_8);
+                BufferedReader lineReader = new BufferedReader(decoder)) {
 
             List<String> lines = new LinkedList<>();
             String line;
-            while((line = lineReader.readLine()) != null) {
+            while ((line = lineReader.readLine()) != null) {
                 lines.add(line);
             }
 
             ListIterator<String> iterator = lines.listIterator(lines.size());
 
-            while(iterator.hasPrevious()) {
-                 Client.in.write(iterator.previous());
+            while (iterator.hasPrevious()) {
+                Client.in.write(iterator.previous());
             }
 
         } catch (IOException e) {
             return "Command cannot be executed: file " + file + " does not exist";
-            // Client.out.print("Command cannot be executed: file " + file + " does not exist.\n");
+            // Client.out.print("Command cannot be executed: file " + file + " does not
+            // exist.\n");
         }
         return "";
     }

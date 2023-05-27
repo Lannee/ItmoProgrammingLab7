@@ -28,8 +28,9 @@ public class CommandsHandler {
         Response response = (Response) connection.packetConsumer();
 //        Response response = connection.sendRequestGetResponse(request);
         if(!(response instanceof CommandsDescriptionResponse commandsDescriptionResponse)) throw new InvalidResponseException();
-        commandsForLoggedUsers = commandsDescriptionResponse.getCommandsForLogedUsers();
-        commandsForUnloggedUsers = commandsDescriptionResponse.getCommandsForUnlogedUsers();
+        commandsForLoggedUsers = commandsDescriptionResponse.getCommandsForLoggedUsers();
+        commandsForUnloggedUsers = commandsDescriptionResponse.getCommandsForUnloggedUsers();
+        System.out.println(commandsForLoggedUsers);
     }
 
     public CommandDescription getCommandDescriptionForLoggedUsers(String commandName) {

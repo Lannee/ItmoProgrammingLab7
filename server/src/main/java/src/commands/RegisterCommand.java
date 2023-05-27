@@ -10,7 +10,7 @@ public class RegisterCommand implements Command {
     public final static CommandArgument[] args = { new CommandArgument("login", String.class),
             new CommandArgument("password", String.class) };
 
-    public final static CommandType commandType = CommandType.LINE_ARGUMENT_COMMAND;
+    public final static CommandType commandType = CommandType.AUTHENTICATION_COMMAND;
 
     private Authorization authorization;
 
@@ -21,9 +21,9 @@ public class RegisterCommand implements Command {
     @Override
     public String execute(Object[] args) {
         checkArgsConformity(args);
-
-        return authorization.registerUser((String) args[0], (String) args[1]).
-                getDescription();
+        String result = authorization.registerUser((String) args[0], (String) args[1]).
+        getDescription();
+        return result;
     }
 
     @Override
