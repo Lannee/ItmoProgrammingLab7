@@ -13,7 +13,8 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class CommandsHandler {
-    private static List<CommandDescription> commands = new LinkedList<>();
+    private static List<CommandDescription> commandsForLoggedUsers = new LinkedList<>();
+    private static List<CommandDescription> commandsForUnloggedUsers = new LinkedList<>();
 
     private final IConnection connection;
 
@@ -27,11 +28,20 @@ public class CommandsHandler {
         Response response = (Response) connection.packetConsumer();
 //        Response response = connection.sendRequestGetResponse(request);
         if(!(response instanceof CommandsDescriptionResponse commandsDescriptionResponse)) throw new InvalidResponseException();
-        commands = commandsDescriptionResponse.getCommands();
+        commandsForLoggedUsers = commandsDescriptionResponse.getCommandsForLogedUsers();
+        commandsForUnloggedUsers = commandsDescriptionResponse.getCommandsForUnlogedUsers();
     }
 
-    public CommandDescription getCommandDescription(String commandName) {
-        for(CommandDescription commandDescription : commands) {
+    public CommandDescription getCommandDescriptionForLoggedUsers(String commandName) {
+        for(CommandDescription commandDescription : commandsForLoggedUsers) {
+            if(commandDescription.getCommandName().equals(commandName))
+                return commandDescription;
+        }
+        return null;
+    }
+
+    public CommandDescription getCommandDescriptionForUnloggedUsers(String commandName) {
+        for(CommandDescription commandDescription : commandsForUnloggedUsers) {
             if(commandDescription.getCommandName().equals(commandName))
                 return commandDescription;
         }

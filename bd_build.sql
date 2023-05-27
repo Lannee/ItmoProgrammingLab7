@@ -33,8 +33,8 @@ create table Dragon (
 create table "user" (
     id serial primary key,
     login varchar(50) not null check ( login not like '' ) unique ,
-    password varbit(128) not null check ( length(password) = 128 ),
-    salt varbit(32) not null check ( length(password) = 32 )
+    password varchar(128) not null,
+    salt varchar(32) not null
 );
 
 create table user_dragon (
@@ -42,6 +42,9 @@ create table user_dragon (
     dragon integer references dragon not null,
     primary key ("user", dragon)
 );
+
+drop table "user";
+drop table "user_dragon";
 
 insert into color (color)
 values ('RED'),

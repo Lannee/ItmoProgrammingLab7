@@ -6,7 +6,6 @@ import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.Objects;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -116,11 +115,13 @@ public class Server {
                     }
                     case INITIALIZATION -> {
                         Response response;
-                        if (request.getUserName() == null) {
-                            response = new CommandsDescriptionResponse(invoker.getNonAuthenticatedCommandsDescription());
-                        } else {
-                            response = new CommandsDescriptionResponse(invoker.getCommandsDescriptions());
-                        }
+                        response = new CommandsDescriptionResponse(invoker.getAuthenticatedCommandsDescriptions(),
+                                invoker.getNonAuthenticatedCommandsDescription());
+//                        if (request.getUserName() == null) {
+//                            response = new CommandsDescriptionResponse(invoker.getNonAuthenticatedCommandsDescription());
+//                        } else {
+//                            response = new CommandsDescriptionResponse(invoker.getAuthenticatedCommandsDescriptions());
+//                        }
                         connection.send(clientHost, clientPort, response);
                     }
                     case LOGGING -> {

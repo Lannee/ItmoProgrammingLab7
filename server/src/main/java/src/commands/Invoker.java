@@ -191,7 +191,7 @@ public class Invoker {
                 .toArray(String[]::new);
     }
 
-    public synchronized List<CommandDescription> getCommandsDescriptions() {
+    public synchronized List<CommandDescription> getAuthenticatedCommandsDescriptions() {
         List<CommandDescription> commandDescriptions = new ArrayList<>(declaredAuthenticatedClientCommands.size());
         declaredAuthenticatedClientCommands.forEach((u, v) -> {
             commandDescriptions.add(
