@@ -168,6 +168,10 @@ public class Invoker {
                 return "Unknown command " + command + ". Type help to get information about all commands.";
             }
         } else {
+            if (declaredNonAuthenticatedClientCommands.containsKey(command) && command.equals(command)) {
+                logger.info("Command executing.");
+                return declaredNonAuthenticatedClientCommands.get(command).execute(args);
+            } 
             if (declaredAuthenticatedClientCommands.containsKey(command)) {
                 logger.info("Command executing.");
                 return declaredAuthenticatedClientCommands.get(command).execute(args);
