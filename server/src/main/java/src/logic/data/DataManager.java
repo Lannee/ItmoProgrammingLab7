@@ -82,5 +82,7 @@ public interface DataManager<T extends Comparable<? super T>> {
      * @return Type of the stored elements
      */
     Class<T> getClT();
-    void forEach(Consumer<? super T> action);
+    void forEach(Consumer<? super T> act3ion);
+
+    int getUserIdFromUserName(String userName);
 }

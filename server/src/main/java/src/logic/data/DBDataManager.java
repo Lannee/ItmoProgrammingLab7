@@ -17,6 +17,7 @@ import java.util.Date;
 import java.util.function.Consumer;
 
 import static src.logic.data.DBQueries.*;
+import static src.authorization.AuthorizationQueries.*;
 
 public class DBDataManager implements DataManager<Dragon> {
 
@@ -48,13 +49,13 @@ public class DBDataManager implements DataManager<Dragon> {
         try {
             Statement statement = dbConnection.createStatement();
             ResultSet rs = statement.executeQuery(initializationQuery);
-            while(rs.next()) {
+            while (rs.next()) {
                 Dragon dragon = new Dragon();
                 dragon.setId(rs.getLong("id"));
                 dragon.setName(rs.getString("name"));
 
                 rs.getInt("coordinatesid");
-                if(!rs.wasNull()) {
+                if (!rs.wasNull()) {
                     Coordinates coordinates = new Coordinates();
                     coordinates.setX(rs.getLong("x"));
                     coordinates.setY(rs.getInt("y"));
@@ -68,7 +69,7 @@ public class DBDataManager implements DataManager<Dragon> {
                 dragon.setColor(Color.valueOf(rs.getString("color")));
 
                 rs.getInt("killerId");
-                if(!rs.wasNull()) {
+                if (!rs.wasNull()) {
                     Person killer = new Person();
                     killer.setName(rs.getString("killername"));
                     killer.setBirthday(rs.getObject("birthday", Date.class));
@@ -116,7 +117,7 @@ public class DBDataManager implements DataManager<Dragon> {
             // creating person
             Person killer = element.getKiller();
             Integer killer_id = null;
-            if(killer != null) {
+            if (killer != null) {
                 killer_id = addPersonToDB(killer);
             }
 
@@ -125,17 +126,23 @@ public class DBDataManager implements DataManager<Dragon> {
             dragonStatement.setString(1, element.getName());
             dragonStatement.setInt(2, coordinates_id);
 
-            if(element.getAge() != null) dragonStatement.setLong(3, element.getAge());
-            else dragonStatement.setNull(3, Types.BIGINT);
+            if (element.getAge() != null)
+                dragonStatement.setLong(3, element.getAge());
+            else
+                dragonStatement.setNull(3, Types.BIGINT);
 
-            if(element.getWingspan() != null) dragonStatement.setLong(4, element.getWingspan());
-            else dragonStatement.setNull(4, Types.INTEGER);
+            if (element.getWingspan() != null)
+                dragonStatement.setLong(4, element.getWingspan());
+            else
+                dragonStatement.setNull(4, Types.INTEGER);
 
             dragonStatement.setFloat(5, element.getWeight());
             dragonStatement.setString(6, element.getColor().name());
 
-            if(killer_id != null) dragonStatement.setInt(7, killer_id);
-            else dragonStatement.setNull(7, Types.INTEGER);
+            if (killer_id != null)
+                dragonStatement.setInt(7, killer_id);
+            else
+                dragonStatement.setNull(7, Types.INTEGER);
 
             try {
                 if (dragonStatement.executeUpdate() > 0) {
@@ -169,7 +176,8 @@ public class DBDataManager implements DataManager<Dragon> {
             Savepoint savepoint = dbConnection.setSavepoint();
 
             // getting coordinates and killer ids
-            PreparedStatement coordinatesIdNPersonIdQuery = dbConnection.prepareStatement(coordinatesIDNPersonIdStatement);
+            PreparedStatement coordinatesIdNPersonIdQuery = dbConnection
+                    .prepareStatement(coordinatesIDNPersonIdStatement);
             coordinatesIdNPersonIdQuery.setLong(1, id);
             ResultSet ids = coordinatesIdNPersonIdQuery.executeQuery();
             ids.next();
@@ -186,18 +194,20 @@ public class DBDataManager implements DataManager<Dragon> {
 
             // updating killer
             Person newKiller = newObject.getKiller();
-            if(personId != 0) {
+            if (personId != 0) {
                 if (newKiller != null) {
                     PreparedStatement personStatement = dbConnection.prepareStatement(updatePerson);
                     personStatement.setString(1, newKiller.getName());
 
-                    if(newKiller.getBirthday() != null) personStatement.setTimestamp(2, Timestamp.from(newKiller.getBirthday().toInstant()));
-                    else personStatement.setNull(2, Types.TIMESTAMP);
+                    if (newKiller.getBirthday() != null)
+                        personStatement.setTimestamp(2, Timestamp.from(newKiller.getBirthday().toInstant()));
+                    else
+                        personStatement.setNull(2, Types.TIMESTAMP);
 
                     personStatement.setFloat(3, newKiller.getHeight());
                     personStatement.setString(4, newKiller.getPassportID());
 
-                    if(newKiller.getHairColor() == null) {
+                    if (newKiller.getHairColor() == null) {
                         personStatement.setNull(5, Types.INTEGER);
                     } else {
                         PreparedStatement heirColor = dbConnection.prepareStatement(getColorID);
@@ -215,7 +225,7 @@ public class DBDataManager implements DataManager<Dragon> {
                     deletePerson.executeUpdate();
                 }
             } else {
-                if(newKiller != null) {
+                if (newKiller != null) {
                     personId = addPersonToDB(newKiller);
                     PreparedStatement setKillerId = dbConnection.prepareStatement(updateKillerId);
                     setKillerId.setLong(1, personId);
@@ -228,11 +238,15 @@ public class DBDataManager implements DataManager<Dragon> {
             PreparedStatement dragonStatement = dbConnection.prepareStatement(updateDragon);
             dragonStatement.setString(1, newObject.getName());
 
-            if(newObject.getAge() != null) dragonStatement.setLong(2, newObject.getAge());
-            else dragonStatement.setNull(2, Types.BIGINT);
+            if (newObject.getAge() != null)
+                dragonStatement.setLong(2, newObject.getAge());
+            else
+                dragonStatement.setNull(2, Types.BIGINT);
 
-            if(newObject.getWingspan() != null) dragonStatement.setLong(3, newObject.getWingspan());
-            else dragonStatement.setNull(3, Types.INTEGER);
+            if (newObject.getWingspan() != null)
+                dragonStatement.setLong(3, newObject.getWingspan());
+            else
+                dragonStatement.setNull(3, Types.INTEGER);
 
             dragonStatement.setFloat(4, newObject.getWeight());
             dragonStatement.setString(5, newObject.getColor().name());
@@ -277,7 +291,8 @@ public class DBDataManager implements DataManager<Dragon> {
 
     @Override
     public boolean remove(Object o, int userId) {
-        if(!(o instanceof Dragon dragon)) throw new ClassCastException();
+        if (!(o instanceof Dragon dragon))
+            throw new ClassCastException();
         return collection.remove(o);
     }
 
@@ -324,15 +339,18 @@ public class DBDataManager implements DataManager<Dragon> {
 
         if (person.getBirthday() != null)
             personStatement.setTimestamp(2, Timestamp.from(person.getBirthday().toInstant()));
-        else personStatement.setNull(2, Types.TIMESTAMP);
+        else
+            personStatement.setNull(2, Types.TIMESTAMP);
 
         personStatement.setFloat(3, person.getHeight());
         personStatement.setString(4, person.getPassportID());
 
-        if (person.getHairColor() != null) personStatement.setString(5, person.getHairColor().name());
-        else personStatement.setNull(5, Types.VARCHAR);
+        if (person.getHairColor() != null)
+            personStatement.setString(5, person.getHairColor().name());
+        else
+            personStatement.setNull(5, Types.VARCHAR);
 
-        if(personStatement.executeUpdate() > 0) {
+        if (personStatement.executeUpdate() > 0) {
             PreparedStatement personCurrval = dbConnection.prepareStatement(currvalStatement);
             personCurrval.setString(1, "person_id_seq");
             ResultSet rs1 = personCurrval.executeQuery();
@@ -344,8 +362,9 @@ public class DBDataManager implements DataManager<Dragon> {
     }
 
     private Dragon getDragonById(long id) {
-        for(Dragon dragon : collection) {
-            if(dragon.getId() == id) return dragon;
+        for (Dragon dragon : collection) {
+            if (dragon.getId() == id)
+                return dragon;
         }
         return null;
     }
@@ -370,8 +389,24 @@ public class DBDataManager implements DataManager<Dragon> {
     }
 
     // public boolean dragonUserMatch(int userId, int dragonId) {
-    //     try {
-    //         PreparedStatement match = dbConnection.prepareStatement()
-    //     }
+    // try {
+    // PreparedStatement match = dbConnection.prepareStatement()
     // }
+    // }
+
+    public int getUserIdFromUserName(String userName) {
+        int userId = 0;
+        PreparedStatement match;
+        try {
+            match = dbConnection.prepareStatement(getUserIdFromUserName);
+            match.setString(1, userName);
+            ResultSet resultSet = match.executeQuery();
+            if (resultSet.next()) {
+                userId = resultSet.getInt("id");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return userId;
+    }
 }

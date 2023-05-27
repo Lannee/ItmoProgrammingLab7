@@ -161,6 +161,9 @@ public class Invoker {
 
     public synchronized String executeClientCommand(String command, Object[] args, String userName) {
         int userId = 0;
+        if (userName != null) {
+            userId = receiver.getUserIdFromUserName(userName);
+        }
         if (userName == null) {
             if (declaredNonAuthenticatedClientCommands.containsKey(command)) {
                 logger.info("Command executing.");

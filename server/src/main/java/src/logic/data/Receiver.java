@@ -203,4 +203,8 @@ public class Receiver {
         reentrantLockOnRead.unlock();
         return groups;
     }
+
+    public int getUserIdFromUserName(String userName) {
+        return collection.getUserIdFromUserName(userName);
+    }
 }
