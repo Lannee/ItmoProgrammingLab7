@@ -20,7 +20,7 @@ public class CountGreaterThanWeight implements Command {
     }
 
     @Override
-    public String execute(Object[] args, String userName) {
+    public String execute(Object[] args, int userId) {
         checkArgsConformity(args);
         try {
             int amount = receiver.countCompareToValueByField(args()[0].getArgumentName(), (Comparable) args[0], (u, v) -> -u.compareTo(v));

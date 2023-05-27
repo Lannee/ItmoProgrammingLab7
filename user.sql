@@ -14,3 +14,6 @@ WHERE login = ?;
 
 INSERT INTO "user" (login, password, salt)
 VALUES (?, ?, ?);
+
+INSERT INTO user_dragon ("user", dragon)
+VALUES (?, ?);

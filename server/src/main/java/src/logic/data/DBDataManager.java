@@ -363,4 +363,15 @@ public class DBDataManager implements DataManager<Dragon> {
     public void sort() {
         Collections.sort(collection);
     }
+
+    public void commitAdd(int userId, int dragonId) {
+        try {
+            PreparedStatement commitAdd = dbConnection.prepareStatement(DBQueries.commitAdd);
+            commitAdd.setInt(1, userId);
+            commitAdd.setInt(2, dragonId);
+            commitAdd.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

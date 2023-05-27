@@ -75,4 +75,9 @@ public final class DBQueries {
                         FROM color
                         WHERE Color.color = ?
                         """;
+
+        public static final String commitAdd = """
+                INSERT INTO user_dragon ("user", dragon)
+                VALUES (?, ?);
+                """;
 }

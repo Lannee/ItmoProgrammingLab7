@@ -1,23 +1,19 @@
 package src.logic.data;
 
+import module.stored.Dragon;
+import src.utils.Formatter;
+import module.utils.ObjectUtils;
+
 import java.lang.reflect.Field;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Predicate;
-
-import module.stored.Dragon;
-import module.utils.ObjectUtils;
-import src.utils.Formatter;
 
 /**
  * Responsible for performing various actions on the collection
  */
 public class Receiver {
-//    private final DataManager<Dragon> collection = new CSVFileDataManager<>(Dragon.class);
+    //    private final DataManager<Dragon> collection = new CSVFileDataManager<>(Dragon.class);
     private final DataManager<Dragon> collection = new DBDataManager("jdbc:postgresql://localhost:5432/studs");
     ReentrantLock reentrantLockOnWrite = new ReentrantLock();
     ReentrantLock reentrantLockOnRead = new ReentrantLock();
@@ -28,13 +24,13 @@ public class Receiver {
         reentrantLockOnWrite.unlock();
     }
 
-    public void add(Object obj, String userName) {
+    public void add(Object obj, int userId) {
         reentrantLockOnWrite.lock();
-        collection.add(getStoredType().cast(obj));
+        collection.add(getStoredType().cast(obj), userId);
         reentrantLockOnWrite.unlock();
     }
 
-    public void update(long id, Object newObject, String userName) {
+    public void update(long id, Object newObject) {
         if (id <= 0) throw new NumberFormatException("Incorrect argument value");
         if(!(newObject instanceof Dragon dragon)) throw new ClassCastException();
 
@@ -44,7 +40,7 @@ public class Receiver {
 
     }
 
-    public void add(Object obj, long id, String userName) {
+    public void add(Object obj, long id) {
         reentrantLockOnWrite.lock();
         try {
             if (id <= 0)
@@ -57,7 +53,7 @@ public class Receiver {
         reentrantLockOnWrite.unlock();
     }
 
-    public void clear(String userName) {
+    public void clear(int userId) {
         reentrantLockOnWrite.lock();
         collection.clear();
         reentrantLockOnWrite.unlock();
@@ -141,14 +137,14 @@ public class Receiver {
         return result;
     }
 
-    public boolean removeFromCollection(Object o, String userName) {
+    public boolean removeFromCollection(Object o) {
         reentrantLockOnWrite.lock();
         boolean result = collection.remove(o);
         reentrantLockOnWrite.unlock();
         return result;
     }
 
-    public String removeOn(Predicate<Dragon> filter, boolean showRemoved, String userName) {
+    public String removeOn(Predicate<Dragon> filter, boolean showRemoved) {
         if (collection.size() == 0) {
             return "Cannot remove since the collection is empty";
         }
@@ -157,7 +153,7 @@ public class Receiver {
         for (Dragon element : collection.getElements()) {
             if (filter.test(element)) {
                 removed.add(element);
-                removeFromCollection(element, userName);
+                removeFromCollection(element);
             }
         }
 
@@ -170,7 +166,7 @@ public class Receiver {
         return "";
     }
 
-    public String removeByIndex(int index, boolean showRemoved, String userName) {
+    public String removeByIndex(int index, boolean showRemoved) {
         if (collection.size() == 0) {
             return "Cannot remove since the collection is empty";
         }
@@ -180,7 +176,7 @@ public class Receiver {
         }
 
         Object obj = getElementByIndex(index);
-        return removeOn(e -> e == obj, showRemoved, userName);
+        return removeOn(e -> e == obj, showRemoved);
     }
 
     public Class<Dragon> getStoredType() {
