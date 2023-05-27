@@ -11,6 +11,7 @@ public abstract class InputManager {
     private Deque<String> buffer = new LinkedList<>();
 
     public abstract String readLine();
+    public abstract String readLine(boolean maskInput);
     public void write(String line) {
         buffer.push(line);
     }
