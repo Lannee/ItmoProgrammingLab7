@@ -27,16 +27,13 @@ public class Update implements Command {
     }
 
     @Override
-    public String execute(Object[] args) {
+    public String execute(Object[] args, String userName) {
         // checkArgsConformity(args);
         Long id = (Long) args[0];
 
-        System.out.println("-------------------------WORKING IN UPDATE COMMAND--------------------------");
-
         if (args.length == 2) {
             Object createdObject = args[1];
-            System.out.println("-------------------------OBJECT IS READY TO BE UPDATED--------------------------");
-            receiver.update(id, createdObject);
+            receiver.update(id, createdObject, userName);
             return "Object with " + args()[0].getArgumentName() + " " + id + " was successfully updated";
         }
         try {

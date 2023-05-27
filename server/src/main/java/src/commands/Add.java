@@ -22,8 +22,8 @@ public class Add implements Command {
     }
 
     @Override
-    public String execute(Object[] args) {
-        receiver.add(args[0]);
+    public String execute(Object[] args, String userName) {
+        receiver.add(args[0], userName);
         return "Object was successfully created";
     }
 

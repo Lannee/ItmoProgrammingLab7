@@ -145,9 +145,10 @@ public class Invoker {
     }
 
     private String executeServerCommand(String command, String[] args) {
+        String userName = ""; 
         if (declaredServerCommands.containsKey(command)) {
             logger.info("Command executing.");
-            return declaredServerCommands.get(command).execute(args);
+            return declaredServerCommands.get(command).execute(args, userName);
         } else {
             logger.error("Unknown command.");
             return "Unknown command " + command + ". Type help to get information about all commands.\n";
@@ -162,7 +163,7 @@ public class Invoker {
         if (userName == null) {
             if (declaredNonAuthenticatedClientCommands.containsKey(command)) {
                 logger.info("Command executing.");
-                return declaredNonAuthenticatedClientCommands.get(command).execute(args);
+                return declaredNonAuthenticatedClientCommands.get(command).execute(args, userName);
             } else {
                 logger.error("Unknown command.");
                 return "Unknown command " + command + ". Type help to get information about all commands.";
@@ -170,11 +171,11 @@ public class Invoker {
         } else {
             if (declaredNonAuthenticatedClientCommands.containsKey(command) && command.equals(command)) {
                 logger.info("Command executing.");
-                return declaredNonAuthenticatedClientCommands.get(command).execute(args);
+                return declaredNonAuthenticatedClientCommands.get(command).execute(args, userName);
             } 
             if (declaredAuthenticatedClientCommands.containsKey(command)) {
                 logger.info("Command executing.");
-                return declaredAuthenticatedClientCommands.get(command).execute(args);
+                return declaredAuthenticatedClientCommands.get(command).execute(args, userName);
             } else {
                 logger.error("Unknown command.");
                 return "Unknown command " + command + ". Type help to get information about all commands.";

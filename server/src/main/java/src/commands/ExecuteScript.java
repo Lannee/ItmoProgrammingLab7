@@ -19,7 +19,7 @@ public class ExecuteScript implements Command {
     }
 
     @Override
-    public String execute(Object[] args) {
+    public String execute(Object[] args, String userName) {
         checkArgsConformity(args);
 //        invoker.execute_script((String) args[0]);
         return "Successfully";

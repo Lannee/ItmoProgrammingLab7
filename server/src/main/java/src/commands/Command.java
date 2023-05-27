@@ -10,7 +10,7 @@ import java.util.Arrays;
  * Command interface, sets the behavior for each team in the project
  */
 public interface Command {
-    String execute(Object[] args);
+    String execute(Object[] args, String userName);
 
     String getDescription();
 

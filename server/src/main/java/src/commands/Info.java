@@ -20,7 +20,7 @@ public class Info implements Command {
     }
 
     @Override
-    public String execute(Object[] args) throws IllegalArgumentException {
+    public String execute(Object[] args, String userName) throws IllegalArgumentException {
         checkArgsConformity(args);
         return receiver.getInfo();
     }

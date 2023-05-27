@@ -20,9 +20,9 @@ public class RemoveHead implements Command {
     }
 
     @Override
-    public String execute(Object[] args) {
+    public String execute(Object[] args, String userName) {
         checkArgsConformity(args);
-        return receiver.removeByIndex(0, true);
+        return receiver.removeByIndex(0, true, userName);
     }
 
     @Override
