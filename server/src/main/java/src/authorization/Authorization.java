@@ -6,6 +6,7 @@ import module.logic.exceptions.FileFormatException;
 import module.utils.PGParser;
 
 import java.io.FileNotFoundException;
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.*;
@@ -79,7 +80,7 @@ public class Authorization {
     }
 
     private String getPasswordHash(String salt, String password) {
-        return new String(md5.digest((pepper + password + salt).getBytes()));
+        return new String(md5.digest((pepper + password + salt).getBytes()), StandardCharsets.UTF_8);
     }
 
     public RegistrationStatus registerUser(String user, String password) {
@@ -108,8 +109,9 @@ public class Authorization {
 
     private static String generateSalt() {
         byte[] saltBytes = new byte[4];
+
         new Random().nextBytes(saltBytes);
 
-        return new String(saltBytes);
+        return new String(saltBytes, StandardCharsets.UTF_8);
     }
 }

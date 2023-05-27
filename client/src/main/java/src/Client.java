@@ -76,10 +76,6 @@ public class Client {
                     logger.info("User typed: '{}'", line.trim());
                     try {
                         String commandResult = invoker.parseCommand(line);
-                        // if (commandResult == "Login successful" || commandResult == "Registration
-                        // successful") {
-                        // isLogged = true;
-                        // }
                         out.print(commandResult.equals("") ? "" : commandResult);
                     } catch (NullPointerException ne) {
                         running = false;

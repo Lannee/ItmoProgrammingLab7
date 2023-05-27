@@ -145,18 +145,18 @@ public class Invoker {
                 return execute_script((String) args[0]);
             case AUTHENTICATION_COMMAND:
                 Client.out.print("Enter user name : ");
-                userName = Client.in.readLine().trim();
+                this.userName = Client.in.readLine().trim();
                 Client.out.print("Enter password : ");
-                userPassword = Client.in.readLine().trim();
-                if(userName.equals("")) return "Invalid user name";
-                if(userPassword.equals("")) return "Password cannot be blank";
+                this.userPassword = Client.in.readLine().trim();
+                if(this.userName.equals("")) return "Invalid user name";
+                if(this.userPassword.equals("")) return "Password cannot be blank";
 
                 String[] newArgs = new String[2];
-                newArgs[0] = userName;
-                newArgs[1] = userPassword;
+                newArgs[0] = this.userName;
+                newArgs[1] = this.userPassword;
                 response = sendRequestAndGetResponse(RequestFactory.createRequest(commandName, newArgs, TypeOfRequest.CONFIRMATION, null, null));
 
-                if (response.getResponse().equals("Login successful")) {
+                if (response.getResponse().equals("Login successful") || response.getResponse().equals("Registration successful")) {
                     isAuthed = true;
                 } else {
                     this.userName = null;

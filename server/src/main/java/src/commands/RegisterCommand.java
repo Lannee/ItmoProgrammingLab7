@@ -20,10 +20,7 @@ public class RegisterCommand implements Command {
 
     @Override
     public String execute(Object[] args) {
-        checkArgsConformity(args);
-        String result = authorization.registerUser((String) args[0], (String) args[1]).
-        getDescription();
-        return result;
+        return authorization.registerUser((String) args[0], (String) args[1]).getDescription();
     }
 
     @Override
