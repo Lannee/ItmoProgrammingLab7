@@ -15,7 +15,7 @@ import static src.authorization.AuthorizationQueries.*;
 
 public class Authorization {
 
-    private static final String paper = "]8~h/+$>";
+    private static final String pepper = "]8~h/+$>";
 
     private static MessageDigest md5;
 
@@ -28,7 +28,7 @@ public class Authorization {
             Class.forName("org.postgresql.Driver");
             connection = DriverManager.getConnection(dbURL, pgParser.getUserName(), pgParser.getPassword());
 
-            md5 = MessageDigest.getInstance("DM5");
+            md5 = MessageDigest.getInstance("MD5");
         } catch (NoSuchAlgorithmException | FileFormatException ignored) {}
         catch (ClassNotFoundException e) {
             throw new RuntimeException(e);
@@ -79,8 +79,7 @@ public class Authorization {
     }
 
     private String getPasswordHash(String salt, String password) {
-        md5.update((paper + password + salt).getBytes());
-        return new String(md5.digest());
+        return new String(md5.digest((pepper + password + salt).getBytes()));
     }
 
     public RegistrationStatus registerUser(String user, String password) {

@@ -30,19 +30,19 @@ public class Client {
     public final static String invite = ">>>";
 
     private final static String logo = """
-            ╔╗   ╔═══╗╔══╗  ╔═══╗                                                   
-            ║║   ║╔═╗║║╔╗║  ║╔══╝                                                  
-            ║║   ║║ ║║║╚╝╚╗ ║╚══╗   ╔╗       ╔╗            ╔═╗╔╗    ╔╗         
+            ╔╗   ╔═══╗╔══╗  ╔═══╗
+            ║║   ║╔═╗║║╔╗║  ║╔══╝
+            ║║   ║║ ║║║╚╝╚╗ ║╚══╗   ╔╗       ╔╗            ╔═╗╔╗    ╔╗
             ║║ ╔╗║╚═╝║║╔═╗║ ║╔═╗║   ║╚╗╔╦╗╔╗ ║╠╗╔═╗  ╔╦╗╔═╗║═╣║╚╗╔═╗║╚╗╔═╗╔═╦═╗
             ║╚═╝║║╔═╗║║╚═╝║ ║╚═╝║   ║╬║║║║║╚╗║═╣║╬║  ║╔╝║╩╣╠═║║║║║╩╣║╔╣║╬║╚╗║╔╝
-            ╚═══╝╚╝ ╚╝╚═══╝ ╚═══╝   ╚═╝╚═╝╚═╝╚╩╝╚═╝  ╚╝ ╚═╝╚═╝╚╩╝╚═╝╚═╝╚═╝ ╚═╝ 
+            ╚═══╝╚╝ ╚╝╚═══╝ ╚═══╝   ╚═╝╚═╝╚═╝╚╩╝╚═╝  ╚╝ ╚═╝╚═╝╚╩╝╚═╝╚═╝╚═╝ ╚═╝
             """;
 
     public static final OutputManager out = new ConsoleOutputManager();
     public static final InputManager in = new ConsoleInputManager();
     private static final Logger logger = LoggerFactory.getLogger(Client.class);
-//    Command for spectate of working logger
-//    LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
+    // Command for spectate of working logger
+    // LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
 
     public Client() {
         try {
@@ -60,13 +60,16 @@ public class Client {
     }
 
     public void runClient() {
-//        boolean isLogged = false;
-//
-//        while(!isLogged) {
-//
-//        }
+        boolean isLogged = false;
+        //
+        // while(!isLogged) {
+        //
+        // }
 
         if (running) {
+            if (isLogged == true) {
+
+            }
             logger.info("Client started.");
             out.print("Hello, Welcome to\n");
             out.print(logo);
@@ -80,6 +83,9 @@ public class Client {
                     logger.info("User typed: '{}'", line.trim());
                     try {
                         String commandResult = invoker.parseCommand(userName, userPassword, line);
+                        // if (commandResult == "Login successful" || commandResult == "Registration successful") {
+                        //     isLogged = true;
+                        // }
                         out.print(commandResult.equals("") ? "" : commandResult);
                     } catch (NullPointerException ne) {
                         running = false;

@@ -5,6 +5,10 @@ public class RequestFactory {
         return new Request(commandName, argumentsToCommand, typeOfRequest, userName, userPassword);
     }
 
+    public static Request createRequest(TypeOfRequest typeOfRequest, String name) {
+        return new Request(null, null, typeOfRequest, name, null);
+    }
+
     public static Request createRequest(TypeOfRequest typeOfRequest) {
         return new Request(null, null, typeOfRequest, null, null);
     }

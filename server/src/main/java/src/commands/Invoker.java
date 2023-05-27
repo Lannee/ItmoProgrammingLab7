@@ -42,7 +42,7 @@ public class Invoker {
         declaredAuthenticatedClientCommands.put("add", new Add(receiver));
         declaredAuthenticatedClientCommands.put("clear", new Clear(receiver));
         declaredAuthenticatedClientCommands.put("exit", new Exit(receiver));
-//        declaredClientCommands.put("save", new Save(receiver));
+        // declaredClientCommands.put("save", new Save(receiver));
         declaredAuthenticatedClientCommands.put("show", new Show(receiver));
         declaredAuthenticatedClientCommands.put("remove_first", new RemoveFirst(receiver));
         declaredAuthenticatedClientCommands.put("remove_head", new RemoveHead(receiver));
@@ -80,70 +80,63 @@ public class Invoker {
         if (isAuth) {
             declaredAuthenticatedClientCommands.forEach((key, value) -> {
                 out.append(key);
-                if(value.args().length > 0) {
+                if (value.args().length > 0) {
                     String enteredByUserArguments = String.join(
                             ", ",
-                            Arrays.stream(value.args()).
-                                    filter(CommandArgument::isEnteredByUser).
-                                    map(Object::toString).toArray(String[]::new)
-                    );
-    
+                            Arrays.stream(value.args()).filter(CommandArgument::isEnteredByUser).map(Object::toString)
+                                    .toArray(String[]::new));
+
                     String notEnteredByUserArguments = String.join(
                             ", ",
-                            Arrays.stream(value.args()).
-                                    filter(e -> !e.isEnteredByUser()).
-                                    map(Object::toString).toArray(String[]::new)
-                    );
-    
-                    if(!enteredByUserArguments.equals(""))
+                            Arrays.stream(value.args()).filter(e -> !e.isEnteredByUser()).map(Object::toString)
+                                    .toArray(String[]::new));
+
+                    if (!enteredByUserArguments.equals(""))
                         out.append(" ").append(enteredByUserArguments);
-                    if(!notEnteredByUserArguments.equals(""))
+                    if (!notEnteredByUserArguments.equals(""))
                         out.append(" {").append(notEnteredByUserArguments).append("}");
                 }
-    
+
                 out.append(" : ").append(value.getDescription()).append("\n");
             });
         } else {
             declaredNonAuthenticatedClientCommands.forEach((key, value) -> {
                 out.append(key);
-                if(value.args().length > 0) {
+                if (value.args().length > 0) {
                     String enteredByUserArguments = String.join(
                             ", ",
-                            Arrays.stream(value.args()).
-                                    filter(CommandArgument::isEnteredByUser).
-                                    map(Object::toString).toArray(String[]::new)
-                    );
-    
+                            Arrays.stream(value.args()).filter(CommandArgument::isEnteredByUser).map(Object::toString)
+                                    .toArray(String[]::new));
+
                     String notEnteredByUserArguments = String.join(
                             ", ",
-                            Arrays.stream(value.args()).
-                                    filter(e -> !e.isEnteredByUser()).
-                                    map(Object::toString).toArray(String[]::new)
-                    );
-    
-                    if(!enteredByUserArguments.equals(""))
+                            Arrays.stream(value.args()).filter(e -> !e.isEnteredByUser()).map(Object::toString)
+                                    .toArray(String[]::new));
+
+                    if (!enteredByUserArguments.equals(""))
                         out.append(" ").append(enteredByUserArguments);
-                    if(!notEnteredByUserArguments.equals(""))
+                    if (!notEnteredByUserArguments.equals(""))
                         out.append(" {").append(notEnteredByUserArguments).append("}");
                 }
-    
+
                 out.append(" : ").append(value.getDescription()).append("\n");
             });
         }
-        
+
         out.delete(out.toString().length() - 1, out.toString().length());
         return out.toString();
     }
 
     public synchronized String parseCommand(String line) {
         line = line.trim();
-        if(line.equals("")) return "";
+        if (line.equals(""))
+            return "";
 
         String[] words = line.split(" ", 1);
 
         String command = words[0].toLowerCase();
         String[] args;
-        if(words.length == 1)
+        if (words.length == 1)
             args = new String[0];
         else
             args = parseArgs(words[1]);
@@ -174,14 +167,20 @@ public class Invoker {
                 logger.error("Unknown command.");
                 return "Unknown command " + command + ". Type help to get information about all commands.";
             }
-        }
-        if (declaredAuthenticatedClientCommands.containsKey(command)) {
-            logger.info("Command executing.");
-            return declaredAuthenticatedClientCommands.get(command).execute(args);
         } else {
-            logger.error("Unknown command.");
-            return "Unknown command " + command + ". Type help to get information about all commands.";
+            if (declaredNonAuthenticatedClientCommands.containsKey(command)) {
+                logger.info("Command executing.");
+                return declaredNonAuthenticatedClientCommands.get(command).execute(args);
+            } 
+            if (declaredAuthenticatedClientCommands.containsKey(command)) {
+                logger.info("Command executing.");
+                return declaredAuthenticatedClientCommands.get(command).execute(args);
+            } else {
+                logger.error("Unknown command.");
+                return "Unknown command " + command + ". Type help to get information about all commands.";
+            }
         }
+
     }
 
     private synchronized String[] parseArgs(String line) {
