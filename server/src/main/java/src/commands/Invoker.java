@@ -35,7 +35,7 @@ public class Invoker {
     public Invoker(IConnection connection, Authorization authorization, Receiver receiver) {
         this.connection = connection;
         this.receiver = receiver;
-        declaredAuthenticatedClientCommands.put("help", new Help(this));
+        declaredAuthenticatedClientCommands.put("help", new Help(this, true));
         declaredAuthenticatedClientCommands.put("info", new Info(receiver));
         declaredAuthenticatedClientCommands.put("update", new Update(connection, receiver));
         declaredAuthenticatedClientCommands.put("execute_script", new ExecuteScript(this));
@@ -55,9 +55,10 @@ public class Invoker {
         exitClient.setConnection(connection);
         declaredAuthenticatedClientCommands.put("exit", exitClient);
 
-        declaredNonAuthenticatedClientCommands.put("exit", exitClient);
+        declaredNonAuthenticatedClientCommands.put("help", new Help(this, false));
         declaredNonAuthenticatedClientCommands.put("login", new LoginCommand(authorization));
         declaredNonAuthenticatedClientCommands.put("register", new RegisterCommand(authorization));
+        declaredNonAuthenticatedClientCommands.put("exit", exitClient);
 
         declaredServerCommands.put("exit", new Exit(receiver));
         declaredServerCommands.put("save", new Save(receiver));
@@ -73,33 +74,63 @@ public class Invoker {
         files.clear();
     }
 
-    public synchronized String commandsInfo() {
+    // Holy sh. NEEDED TO BE FIXED
+    public synchronized String commandsInfo(boolean isAuth) {
         StringBuilder out = new StringBuilder();
-        declaredAuthenticatedClientCommands.forEach((key, value) -> {
-            out.append(key);
-            if(value.args().length > 0) {
-                String enteredByUserArguments = String.join(
-                        ", ",
-                        Arrays.stream(value.args()).
-                                filter(CommandArgument::isEnteredByUser).
-                                map(Object::toString).toArray(String[]::new)
-                );
-
-                String notEnteredByUserArguments = String.join(
-                        ", ",
-                        Arrays.stream(value.args()).
-                                filter(e -> !e.isEnteredByUser()).
-                                map(Object::toString).toArray(String[]::new)
-                );
-
-                if(!enteredByUserArguments.equals(""))
-                    out.append(" ").append(enteredByUserArguments);
-                if(!notEnteredByUserArguments.equals(""))
-                    out.append(" {").append(notEnteredByUserArguments).append("}");
-            }
-
-            out.append(" : ").append(value.getDescription()).append("\n");
-        });
+        if (isAuth) {
+            declaredAuthenticatedClientCommands.forEach((key, value) -> {
+                out.append(key);
+                if(value.args().length > 0) {
+                    String enteredByUserArguments = String.join(
+                            ", ",
+                            Arrays.stream(value.args()).
+                                    filter(CommandArgument::isEnteredByUser).
+                                    map(Object::toString).toArray(String[]::new)
+                    );
+    
+                    String notEnteredByUserArguments = String.join(
+                            ", ",
+                            Arrays.stream(value.args()).
+                                    filter(e -> !e.isEnteredByUser()).
+                                    map(Object::toString).toArray(String[]::new)
+                    );
+    
+                    if(!enteredByUserArguments.equals(""))
+                        out.append(" ").append(enteredByUserArguments);
+                    if(!notEnteredByUserArguments.equals(""))
+                        out.append(" {").append(notEnteredByUserArguments).append("}");
+                }
+    
+                out.append(" : ").append(value.getDescription()).append("\n");
+            });
+        } else {
+            declaredNonAuthenticatedClientCommands.forEach((key, value) -> {
+                out.append(key);
+                if(value.args().length > 0) {
+                    String enteredByUserArguments = String.join(
+                            ", ",
+                            Arrays.stream(value.args()).
+                                    filter(CommandArgument::isEnteredByUser).
+                                    map(Object::toString).toArray(String[]::new)
+                    );
+    
+                    String notEnteredByUserArguments = String.join(
+                            ", ",
+                            Arrays.stream(value.args()).
+                                    filter(e -> !e.isEnteredByUser()).
+                                    map(Object::toString).toArray(String[]::new)
+                    );
+    
+                    if(!enteredByUserArguments.equals(""))
+                        out.append(" ").append(enteredByUserArguments);
+                    if(!notEnteredByUserArguments.equals(""))
+                        out.append(" {").append(notEnteredByUserArguments).append("}");
+                }
+    
+                out.append(" : ").append(value.getDescription()).append("\n");
+            });
+        }
+        
         out.delete(out.toString().length() - 1, out.toString().length());
         return out.toString();
     }
@@ -131,10 +162,19 @@ public class Invoker {
     }
 
     public synchronized String parseRequest(Request request) {
-        return executeClientCommand(request.getCommandName(), request.getArgumentsToCommand());
+        return executeClientCommand(request.getCommandName(), request.getArgumentsToCommand(), request.getUserName());
     }
 
-    public synchronized String executeClientCommand(String command, Object[] args) {
+    public synchronized String executeClientCommand(String command, Object[] args, String userName) {
+        if (userName == null) {
+            if (declaredNonAuthenticatedClientCommands.containsKey(command)) {
+                logger.info("Command executing.");
+                return declaredNonAuthenticatedClientCommands.get(command).execute(args);
+            } else {
+                logger.error("Unknown command.");
+                return "Unknown command " + command + ". Type help to get information about all commands.";
+            }
+        }
         if (declaredAuthenticatedClientCommands.containsKey(command)) {
             logger.info("Command executing.");
             return declaredAuthenticatedClientCommands.get(command).execute(args);
@@ -155,6 +195,15 @@ public class Invoker {
     public synchronized List<CommandDescription> getCommandsDescriptions() {
         List<CommandDescription> commandDescriptions = new ArrayList<>(declaredAuthenticatedClientCommands.size());
         declaredAuthenticatedClientCommands.forEach((u, v) -> {
+            commandDescriptions.add(
+                    new CommandDescription(u, v.args(), v.getCommandType()));
+        });
+        return commandDescriptions;
+    }
+
+    public synchronized List<CommandDescription> getNonAuthenticatedCommandsDescription() {
+        List<CommandDescription> commandDescriptions = new ArrayList<>(declaredNonAuthenticatedClientCommands.size());
+        declaredNonAuthenticatedClientCommands.forEach((u, v) -> {
             commandDescriptions.add(
                     new CommandDescription(u, v.args(), v.getCommandType()));
         });

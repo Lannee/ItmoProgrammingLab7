@@ -1,5 +1,7 @@
 package src.commands;
 
+import java.util.Map;
+
 import module.commands.CommandArgument;
 import module.commands.CommandType;
 import module.connection.IConnection;
@@ -13,15 +15,17 @@ public class Help implements Command {
 
     private final Invoker invoker;
     private IConnection connection;
+    private final boolean isAuth;
 
-    public Help(Invoker invoker) {
+    public Help(Invoker invoker, boolean isAuth) {
         this.invoker = invoker;
+        this.isAuth = isAuth;
     }
 
     @Override
     public String execute(Object[] args) {
         checkArgsConformity(args);
-        return invoker.commandsInfo();
+        return invoker.commandsInfo(isAuth);
 //        return "";
     }
 

@@ -115,7 +115,12 @@ public class Server {
                         });
                     }
                     case INITIALIZATION -> {
-                        Response response = new CommandsDescriptionResponse(invoker.getCommandsDescriptions());
+                        Response response;
+                        if (request.getUserName() == null) {
+                            response = new CommandsDescriptionResponse(invoker.getNonAuthenticatedCommandsDescription());
+                        } else {
+                            response = new CommandsDescriptionResponse(invoker.getCommandsDescriptions());
+                        }
                         connection.send(clientHost, clientPort, response);
                     }
                     case LOGGING -> {
