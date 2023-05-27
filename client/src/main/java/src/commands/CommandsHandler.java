@@ -30,7 +30,6 @@ public class CommandsHandler {
         if(!(response instanceof CommandsDescriptionResponse commandsDescriptionResponse)) throw new InvalidResponseException();
         commandsForLoggedUsers = commandsDescriptionResponse.getCommandsForLoggedUsers();
         commandsForUnloggedUsers = commandsDescriptionResponse.getCommandsForUnloggedUsers();
-        System.out.println(commandsForLoggedUsers);
     }
 
     public CommandDescription getCommandDescriptionForLoggedUsers(String commandName) {

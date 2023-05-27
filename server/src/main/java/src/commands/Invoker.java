@@ -160,22 +160,19 @@ public class Invoker {
     }
 
     public synchronized String executeClientCommand(String command, Object[] args, String userName) {
+        int userId = 0;
         if (userName == null) {
             if (declaredNonAuthenticatedClientCommands.containsKey(command)) {
                 logger.info("Command executing.");
-                return declaredNonAuthenticatedClientCommands.get(command).execute(args, userName);
+                return declaredNonAuthenticatedClientCommands.get(command).execute(args, userId);
             } else {
                 logger.error("Unknown command.");
                 return "Unknown command " + command + ". Type help to get information about all commands.";
             }
         } else {
-            if (declaredNonAuthenticatedClientCommands.containsKey(command) && command.equals(command)) {
-                logger.info("Command executing.");
-                return declaredNonAuthenticatedClientCommands.get(command).execute(args, userName);
-            } 
             if (declaredAuthenticatedClientCommands.containsKey(command)) {
                 logger.info("Command executing.");
-                return declaredAuthenticatedClientCommands.get(command).execute(args, userName);
+                return declaredAuthenticatedClientCommands.get(command).execute(args, userId);
             } else {
                 logger.error("Unknown command.");
                 return "Unknown command " + command + ". Type help to get information about all commands.";
