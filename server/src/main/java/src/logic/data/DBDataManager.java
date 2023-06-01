@@ -27,67 +27,8 @@ public class DBDataManager implements DataManager<Dragon> {
 
     private Connection dbConnection;
 
-    private final String dbURL;
-    private PGParser pgParser;
-
-    DBDataManager(String url) {
-        dbURL = url;
-    }
-
-    @Override
-    public void initialize(String path) {
-        try {
-            pgParser = new PGParser(path);
-
-            Class.forName("org.postgresql.Driver");
-            dbConnection = DriverManager.getConnection(dbURL, pgParser.getUserName(), pgParser.getPassword());
-        } catch (SQLException | ClassNotFoundException | FileNotFoundException | FileFormatException e) {
-            logger.error(e.getMessage());
-            return;
-        }
-
-        try {
-            Statement statement = dbConnection.createStatement();
-            ResultSet rs = statement.executeQuery(initializationQuery);
-            while (rs.next()) {
-                Dragon dragon = new Dragon();
-                dragon.setId(rs.getLong("id"));
-                dragon.setName(rs.getString("name"));
-
-                rs.getInt("coordinatesid");
-                if (!rs.wasNull()) {
-                    Coordinates coordinates = new Coordinates();
-                    coordinates.setX(rs.getLong("x"));
-                    coordinates.setY(rs.getInt("y"));
-                    dragon.setCoordinates(coordinates);
-                }
-
-                dragon.setCreationDate(rs.getObject("creationdate", OffsetDateTime.class).toZonedDateTime());
-                dragon.setAge(rs.getLong("age"));
-                dragon.setWingspan(rs.getLong("wingspan"));
-                dragon.setWeight(rs.getFloat("weight"));
-                dragon.setColor(Color.valueOf(rs.getString("color")));
-
-                rs.getInt("killerId");
-                if (!rs.wasNull()) {
-                    Person killer = new Person();
-                    killer.setName(rs.getString("killername"));
-                    killer.setBirthday(rs.getObject("birthday", Date.class));
-                    killer.setHeight(rs.getFloat("height"));
-                    killer.setPassportID(rs.getString("passportid"));
-                    String heirColor = rs.getString("heircolor");
-                    killer.setHairColor(heirColor != null ? Color.valueOf(heirColor) : null);
-                    dragon.setKiller(killer);
-                }
-
-                collection.add(dragon);
-            }
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-            throw new RuntimeException(e);
-        }
-
+    DBDataManager(Connection connection) {
+        this.dbConnection = connection;
     }
 
     @Override

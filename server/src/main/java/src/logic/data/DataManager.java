@@ -1,5 +1,7 @@
 package src.logic.data;
 
+import module.logic.exceptions.UserNotOwnObjectException;
+
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
@@ -65,13 +67,6 @@ public interface DataManager<T extends Comparable<? super T>> {
     List<T> getElements(Comparator<? super T> sorter);
 
     List<T> getElements(Comparator<? super T> sorter, int startIndex, int endIndex);
-
-    /**
-     * Initialize collection from specified source
-     *
-     * @param path
-     */
-    void initialize(String path);
 
     /**
      * Saves changes in the collection to the storage
