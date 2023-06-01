@@ -1,10 +1,16 @@
 package src.logic.data;
 
 import module.stored.Dragon;
+import module.utils.PGParser;
+import src.logic.data.db.DBCollectionLoader;
+import src.logic.data.db.DBConfParser;
+import src.logic.data.db.DBConnection;
 import src.utils.Formatter;
 import module.utils.ObjectUtils;
 
+import java.io.FileNotFoundException;
 import java.lang.reflect.Field;
+import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Predicate;
@@ -14,19 +20,34 @@ import java.util.function.Predicate;
  */
 public class Receiver {
     //    private final DataManager<Dragon> collection = new CSVFileDataManager<>(Dragon.class);
-    private final DataManager<Dragon> collection = new DBDataManager("jdbc:postgresql://localhost:5432/studs");
+    private final DataManager<Dragon> db;
+
+    private final List<Dragon> collection = new LinkedList<>();
+
+    private final DBConnection dbConnection;
+
     ReentrantLock reentrantLockOnWrite = new ReentrantLock();
     ReentrantLock reentrantLockOnRead = new ReentrantLock();
 
-    public Receiver(String filePath) {
-        reentrantLockOnWrite.lock();
-        collection.initialize(filePath);
-        reentrantLockOnWrite.unlock();
+    public Receiver(String filePath) throws FileNotFoundException {
+
+        DBConfParser conf = new DBConfParser(filePath);
+        try {
+            dbConnection = new DBConnection(conf.getDbURL(), conf.getUserName(), conf.getPassword());
+
+            CollectionLoader collectionLoader = new DBCollectionLoader(dbConnection);
+            collection.addAll(collectionLoader.getCollection());
+
+            db = new DBDataManager(dbConnection.getConnection());
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public void add(Object obj, int userId) {
         reentrantLockOnWrite.lock();
-        collection.add(getStoredType().cast(obj), userId);
+        db.add(getStoredType().cast(obj), userId);
         reentrantLockOnWrite.unlock();
     }
 
@@ -35,7 +56,7 @@ public class Receiver {
         if(!(newObject instanceof Dragon dragon)) throw new ClassCastException();
 
         reentrantLockOnWrite.lock();
-        collection.update(id, dragon, userId);
+//        db.update(id, dragon, userId);
         reentrantLockOnWrite.unlock();
     }
 
@@ -63,7 +84,7 @@ public class Receiver {
     }
 
     public List<Integer> getUsersIdCreatedDragon(long dragonId) {
-        List<Integer> resultList = collection.getUsersIdCreatedDragon(dragonId);
+        List<Integer> resultList = db.getUsersIdCreatedDragon(dragonId);
         return resultList;
     }
 
@@ -74,7 +95,7 @@ public class Receiver {
                 throw new NumberFormatException("Incorrect argument value");
 
             ObjectUtils.setFieldValue(obj, "id", id);
-            collection.add(getStoredType().cast(obj), userId);
+            db.add(getStoredType().cast(obj), userId);
 
         } catch (NoSuchFieldException | IllegalArgumentException impossible) {}
         reentrantLockOnWrite.unlock();
@@ -82,20 +103,20 @@ public class Receiver {
 
     public void clear(int userId) {
         reentrantLockOnWrite.lock();
-        collection.clear(userId);
+        db.clear(userId);
         reentrantLockOnWrite.unlock();
     }
 
     public String getInfo() {
         reentrantLockOnRead.lock();
-        String result = collection.getInfo();
+        String result = db.getInfo();
         reentrantLockOnRead.unlock();
         return result;
     }
 
     public String getFormattedCollection(Comparator<Dragon> sorter) {
         reentrantLockOnRead.lock();
-        String result = Formatter.format(collection.getElements(sorter), collection.getClT());
+        String result = Formatter.format(db.getElements(sorter), db.getClT());
         reentrantLockOnRead.unlock();
         return result;
     }
@@ -111,13 +132,13 @@ public class Receiver {
             throws NumberFormatException, NoSuchFieldException {
         reentrantLockOnRead.lock();
         int counter = 0;
-        Field field = collection.getClT().getDeclaredField(fieldName);
+        Field field = db.getClT().getDeclaredField(fieldName);
         field.setAccessible(true);
 //        Comparable givenValue = (Comparable) StringConverter.methodForType.get(field.getType()).apply(value);
         if (!ObjectUtils.checkValueForRestrictions(field, value)) {
             throw new NumberFormatException();
         }
-        for (Object element : collection.getElements()) {
+        for (Object element : db.getElements()) {
             try {
                 if (comparator.compare(value, (Comparable) field.get(element)) > 0)
                     counter++;
@@ -129,16 +150,16 @@ public class Receiver {
     }
 
     public synchronized void saveCollection() {
-        collection.save();
+        db.save();
     }
 
     public Dragon getElementByFieldValue(String fieldName, Object value)
             throws NumberFormatException, NoSuchFieldException {
         reentrantLockOnRead.lock();
         Field idField;
-        idField = collection.getClT().getDeclaredField(fieldName);
+        idField = db.getClT().getDeclaredField(fieldName);
         idField.setAccessible(true);
-        for (Dragon e : collection.getElements()) {
+        for (Dragon e : db.getElements()) {
             try {
                 if (idField.get(e).equals(value)) {
                     reentrantLockOnRead.unlock();
@@ -153,31 +174,32 @@ public class Receiver {
 
     public Dragon getElementByIndex(int index) {
         reentrantLockOnRead.lock();
-        Dragon result = collection.get(index);
+        Dragon result = db.get(index);
         reentrantLockOnRead.unlock();
         return result;
     }
 
     public int collectionSize() {
         reentrantLockOnRead.unlock();
-        int result = collection.size();
+        int result = db.size();
         return result;
     }
 
     public boolean removeFromCollection(Object o, int userId) {
         reentrantLockOnWrite.lock();
-        boolean result = collection.remove(o, userId);
+//        boolean result = db.remove(o, userId);
         reentrantLockOnWrite.unlock();
-        return result;
+//        return result;
+        return true;
     }
 
     public String removeOn(Predicate<Dragon> filter, boolean showRemoved, int userId) {
-        if (collection.size() == 0) {
+        if (db.size() == 0) {
             return "Cannot remove since the collection is empty";
         }
         reentrantLockOnWrite.lock();
         List<Dragon> removed = new LinkedList<>();
-        for (Dragon element : collection.getElements()) {
+        for (Dragon element : db.getElements()) {
             if (filter.test(element)) {
                 removed.add(element);
                 removeFromCollection(element, userId);
@@ -185,7 +207,7 @@ public class Receiver {
         }
 
         if (showRemoved) {
-            String result = Formatter.format(removed, collection.getClT());
+            String result = Formatter.format(removed, db.getClT());
             reentrantLockOnWrite.unlock();
             return result;
         }
@@ -194,11 +216,11 @@ public class Receiver {
     }
 
     public String removeByIndex(int index, boolean showRemoved, int userId) {
-        if (collection.size() == 0) {
+        if (db.size() == 0) {
             return "Cannot remove since the collection is empty";
         }
 
-        if (index >= collection.size()) {
+        if (index >= db.size()) {
             return "Cannot remove from collection: index is out of bound";
         }
 
@@ -207,15 +229,15 @@ public class Receiver {
     }
 
     public Class<Dragon> getStoredType() {
-        return collection.getClT();
+        return db.getClT();
     }
 
     public Map<Object, Integer> groupByField(String fieldName) throws NoSuchFieldException {
         reentrantLockOnRead.lock();
         Map<Object, Integer> groups = new HashMap<>();
-        Field field = collection.getClT().getDeclaredField(fieldName);
+        Field field = db.getClT().getDeclaredField(fieldName);
         field.setAccessible(true);
-        for (Object element : collection.getElements()) {
+        for (Object element : db.getElements()) {
             try {
                 Object key = field.get(element);
                 if (groups.containsKey(key)) {
@@ -232,6 +254,6 @@ public class Receiver {
     }
 
     public int getUserIdFromUserName(String userName) {
-        return collection.getUserIdFromUserName(userName);
+        return db.getUserIdFromUserName(userName);
     }
 }
