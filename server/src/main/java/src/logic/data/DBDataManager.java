@@ -410,4 +410,19 @@ public class DBDataManager implements DataManager<Dragon> {
         }
         return userId;
     }
+
+    public List<Integer> getUsersIdCreatedDragon(long dragonId) {
+        List<Integer> resultListDragonId = new ArrayList<Integer>();
+        try (PreparedStatement statement = dbConnection.prepareStatement(getUserCreatedDragon)) {
+            statement.setInt(1, (int) dragonId);
+            ResultSet rs = statement.executeQuery();
+
+            while (rs.next()) {
+                resultListDragonId.add(rs.getInt("users"));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return resultListDragonId; 
+    }
 }

@@ -37,7 +37,34 @@ public class Receiver {
         reentrantLockOnWrite.lock();
         collection.update(id, dragon, userId);
         reentrantLockOnWrite.unlock();
+    }
 
+    public String update(long id, int userId) {
+        try {
+            // Long id = (Long) args[0];
+            
+            Object obj = this.getElementByFieldValue("id", id);
+            if (obj != null) {
+                List<Integer> usersIdCreatedDragonList = this.getUsersIdCreatedDragon(((Dragon) obj).getId());
+                if (usersIdCreatedDragonList != null) {
+                    if (!usersIdCreatedDragonList.contains(userId)) {
+                        return "You have not created this Dragon. \nYou can update only objects that you had created.";
+                    }
+                }
+                return "WAITING";
+            } else {
+                return "Element with this id does not exist";
+            }
+        } catch (NoSuchFieldException e) {
+            return "Stored type does not support this command";
+        } catch (NumberFormatException nfe) {
+            return "Incorrect argument value";
+        }
+    }
+
+    public List<Integer> getUsersIdCreatedDragon(long dragonId) {
+        List<Integer> resultList = collection.getUsersIdCreatedDragon(dragonId);
+        return resultList;
     }
 
     public void add(Object obj, long id, int userId) {

@@ -85,4 +85,6 @@ public interface DataManager<T extends Comparable<? super T>> {
     void forEach(Consumer<? super T> act3ion);
 
     int getUserIdFromUserName(String userName);
+
+    List<Integer> getUsersIdCreatedDragon(long dragonId);
 }
