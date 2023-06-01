@@ -1,7 +1,7 @@
 SELECT
       id
 FROM
-      "user"
+      users
 WHERE
       login = ?
       AND password = ?;
@@ -9,30 +9,30 @@ WHERE
 SELECT
       salt
 FROM
-      "user"
+      users
 WHERE
       login = ?;
 
 SELECT
       id
 FROM
-      "user"
+      users
 WHERE
       login = ?;
 
 INSERT INTO
-      "user" (login, password, salt)
+      users (login, password, salt)
 VALUES
       (?, ?, ?);
 
 INSERT INTO
-      user_dragon ("user", dragon)
+      user_dragon (users, dragon)
 VALUES
       (?, ?);
 
 SELECT
-      "user".id
+      users.id
 FROM
-      "user"
+      users
 WHERE
-      "user".login = ?;
+      users.login = ?;

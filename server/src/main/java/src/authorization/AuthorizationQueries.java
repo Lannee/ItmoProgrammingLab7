@@ -3,34 +3,34 @@ package src.authorization;
 public class AuthorizationQueries {
         public static final String isUserExists = """
                         SELECT id
-                        FROM "user"
+                        FROM users
                         WHERE login = ?;
                         """;
 
         public static final String passwordConfirmation = """
                         SELECT id
-                        FROM "user"
+                        FROM users
                         WHERE login = ? AND
                               password = ?;
                         """;
 
         public static final String getSalt = """
                         SELECT salt
-                        FROM "user"
+                        FROM users
                         WHERE login = ?;
                         """;
 
         public static final String registerUser = """
-                        INSERT INTO "user" (login, password, salt)
+                        INSERT INTO users (login, password, salt)
                         VALUES (?, ?, ?);
                         """;
         
         public static final String getUserIdFromUserName = """
                 SELECT
-                        "user".id
+                        users.id
                 FROM
-                        "user"
+                        users
                 WHERE
-                        "user".login = ?;
+                        users.login = ?;
                 """; 
 }

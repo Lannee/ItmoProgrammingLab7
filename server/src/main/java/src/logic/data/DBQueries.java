@@ -77,7 +77,7 @@ public final class DBQueries {
                         """;
 
         public static final String commitAdd = """
-                INSERT INTO user_dragon ("user", dragon)
-                VALUES (?, ?);
-                """;
+                        INSERT INTO users_dragon (users, dragon)
+                        VALUES (?, ?);
+                        """;
 }

@@ -30,21 +30,18 @@ create table Dragon (
     killer integer references Person on delete set null
 );
 
-create table "user" (
+create table users (
     id serial primary key,
     login varchar(50) not null check ( login not like '' ) unique ,
     password varchar(128) not null,
     salt varchar(32) not null
 );
 
-create table user_dragon (
-    "user" integer references "user" not null,
+create table users_dragon (
+    users integer references users not null,
     dragon integer references dragon not null,
-    primary key ("user", dragon)
+    primary key (users, dragon)
 );
-
-drop table "user";
-drop table "user_dragon";
 
 insert into color (color)
 values ('RED'),

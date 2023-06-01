@@ -143,15 +143,17 @@ public class DBDataManager implements DataManager<Dragon> {
                 dragonStatement.setInt(7, killer_id);
             else
                 dragonStatement.setNull(7, Types.INTEGER);
-
+            Integer dragonId = null;
             try {
-                if (dragonStatement.executeUpdate() > 0) {
-                    dbConnection.commit();
+                if (dragonStatement.executeUpdate() > 0) {    
                     PreparedStatement dragonCurrval = dbConnection.prepareStatement(currvalStatement);
                     dragonCurrval.setString(1, "dragon_id_seq");
                     ResultSet currval = dragonCurrval.executeQuery();
                     currval.next();
-                    element.setId(currval.getInt(1));
+                    dragonId = currval.getInt(1);
+                    element.setId(dragonId);
+                    commitAdd(userId, dragonId);
+                    dbConnection.commit();
 
                     collection.add(element);
                     sort();
@@ -162,7 +164,6 @@ public class DBDataManager implements DataManager<Dragon> {
                 dbConnection.rollback(savepoint);
                 throw new SQLException(e);
             }
-
         } catch (SQLException e) {
             e.printStackTrace();
             throw new RuntimeException(e);
@@ -379,10 +380,10 @@ public class DBDataManager implements DataManager<Dragon> {
 
     public void commitAdd(int userId, int dragonId) {
         try {
-            PreparedStatement commitAdd = dbConnection.prepareStatement(DBQueries.commitAdd);
-            commitAdd.setInt(1, userId);
-            commitAdd.setInt(2, dragonId);
-            commitAdd.executeUpdate();
+            PreparedStatement commitAddStatement = dbConnection.prepareStatement(commitAdd);
+            commitAddStatement.setInt(1, userId);
+            commitAddStatement.setInt(2, dragonId);
+            System.out.println("Изменено строк в базе данных " + commitAddStatement.executeUpdate());
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
