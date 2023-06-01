@@ -67,6 +67,11 @@ public class Receiver {
         return resultList;
     }
 
+    public List<Long> getDragonUserCreated(int userId) {
+        List<Long> resultList = collection.getDragonUserCreated(userId);
+        return resultList;
+    }
+
     public void add(Object obj, long id, int userId) {
         reentrantLockOnWrite.lock();
         try {

@@ -1,11 +1,13 @@
 package src.commands;
 
+import java.util.List;
+
 import module.commands.CommandArgument;
 import module.commands.CommandType;
 import module.connection.IConnection;
 import src.logic.data.Receiver;
 
-/**
+/**I
  * Removes an item from the collection by its id
  */
 public class RemoveById implements Command {
@@ -27,7 +29,11 @@ public class RemoveById implements Command {
 //            Long id = Long.parseLong(args[0]);
             Long id = (Long) args[0];
             Object obj = receiver.getElementByFieldValue(args()[0].getArgumentName(), id);
-            if(obj != null) {
+            if (obj != null) {
+                List<Long> listOfDragonCreatedByUser = receiver.getDragonUserCreated(userId);
+                if (listOfDragonCreatedByUser.isEmpty()) {
+                    return "Can not remove this object out of database and collection, because object with typed id had created by another user.\nYou can remove only objects that you had created.";
+                }
                 receiver.removeOn(e -> e == obj, false, userId);
                 return "Object with " + args()[0] + " " + id + " was successfully removed";
             } else {

@@ -87,4 +87,6 @@ public interface DataManager<T extends Comparable<? super T>> {
     int getUserIdFromUserName(String userName);
 
     List<Integer> getUsersIdCreatedDragon(long dragonId);
+
+    List<Long> getDragonUserCreated(int userId);
 }

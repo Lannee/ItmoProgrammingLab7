@@ -411,6 +411,7 @@ public class DBDataManager implements DataManager<Dragon> {
         return userId;
     }
 
+    @Override
     public List<Integer> getUsersIdCreatedDragon(long dragonId) {
         List<Integer> resultListDragonId = new ArrayList<Integer>();
         try (PreparedStatement statement = dbConnection.prepareStatement(getUserCreatedDragon)) {
@@ -419,6 +420,22 @@ public class DBDataManager implements DataManager<Dragon> {
 
             while (rs.next()) {
                 resultListDragonId.add(rs.getInt("users"));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return resultListDragonId; 
+    }
+
+    @Override
+    public List<Long> getDragonUserCreated(int userId) {
+        List<Long> resultListDragonId = new ArrayList<Long>();
+        try (PreparedStatement statement = dbConnection.prepareStatement(getDragonsCreatedByUser)) {
+            statement.setInt(1, (int) userId);
+            ResultSet rs = statement.executeQuery();
+
+            while (rs.next()) {
+                resultListDragonId.add(rs.getLong("dragon"));
             }
         } catch (SQLException e) {
             e.printStackTrace();
