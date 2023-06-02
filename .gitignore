@@ -57,6 +57,7 @@ logs
 base.csv
 
 ##############################
-## .pgpass file
+## .pgpass & config.properties file
 ##############################
 .pgpass
+server/src/main/resources/config.properties

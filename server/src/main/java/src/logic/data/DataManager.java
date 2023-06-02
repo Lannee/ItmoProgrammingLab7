@@ -1,7 +1,5 @@
 package src.logic.data;
 
-import module.logic.exceptions.UserNotOwnObjectException;
-
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
@@ -34,7 +32,7 @@ public interface DataManager<T extends Comparable<? super T>> {
     /**
      * Clears collection
      */
-    void clear(int userId);
+    int clear(int userId);
 
     /**
      *

@@ -1,7 +1,6 @@
 package src.logic.data;
 
 import module.stored.Dragon;
-import module.utils.PGParser;
 import src.logic.data.db.DBCollectionLoader;
 import src.logic.data.db.DBConfParser;
 import src.logic.data.db.DBConnection;
@@ -29,9 +28,8 @@ public class Receiver {
     ReentrantLock reentrantLockOnWrite = new ReentrantLock();
     ReentrantLock reentrantLockOnRead = new ReentrantLock();
 
-    public Receiver(String filePath) throws FileNotFoundException {
+    public Receiver(DBConfParser conf) throws FileNotFoundException {
 
-        DBConfParser conf = new DBConfParser(filePath);
         try {
             dbConnection = new DBConnection(conf.getDbURL(), conf.getUserName(), conf.getPassword());
 
@@ -89,7 +87,7 @@ public class Receiver {
     }
 
     public List<Long> getDragonUserCreated(int userId) {
-        List<Long> resultList = collection.getDragonUserCreated(userId);
+        List<Long> resultList = db.getDragonUserCreated(userId);
         return resultList;
     }
 
@@ -106,10 +104,11 @@ public class Receiver {
         reentrantLockOnWrite.unlock();
     }
 
-    public void clear(int userId) {
+    public int clear(int userId) {
         reentrantLockOnWrite.lock();
-        db.clear(userId);
+        int countRemoved = db.clear(userId);
         reentrantLockOnWrite.unlock();
+        return countRemoved;
     }
 
     public String getInfo() {

@@ -25,6 +25,7 @@ import src.authorization.Authorization;
 import src.commands.Invoker;
 import src.connection.DatagramConnection;
 import src.logic.data.Receiver;
+import src.logic.data.db.DBConfParser;
 
 public class Server {
     private final static int SERVER_PORT = 50689;
@@ -45,17 +46,18 @@ public class Server {
     private ExecutorService executorServiceForReceivingRequests = Executors.newFixedThreadPool(5);
     private ExecutorService executorServiceForExecutingCommands = Executors.newCachedThreadPool();
 
-    public void start(String[] args) {
+    public void start() {
 
         logger.info("Starting server.");
-        String filePath = getFilePath(args);
 
         try {
+            DBConfParser conf = new DBConfParser();
+
             connection = new DatagramConnection(SERVER_PORT, true);
-            authorization = new Authorization(filePath, "jdbc:postgresql://localhost:5432/studs");
+            authorization = new Authorization(conf);
 
             invoker = new Invoker(connection, authorization,
-                    new Receiver(filePath));
+                    new Receiver(conf));
 
             logger.info("Invoker and Receiver started.");
         } catch (SocketException e) {

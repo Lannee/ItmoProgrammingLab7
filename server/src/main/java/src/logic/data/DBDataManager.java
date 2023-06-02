@@ -5,7 +5,6 @@ import module.stored.Color;
 import module.stored.Coordinates;
 import module.stored.Dragon;
 import module.stored.Person;
-import module.utils.PGParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -86,7 +85,7 @@ public class DBDataManager implements DataManager<Dragon> {
                 dragonStatement.setNull(7, Types.INTEGER);
             Integer dragonId = null;
             try {
-                if (dragonStatement.executeUpdate() > 0) {    
+                if (dragonStatement.executeUpdate() > 0) {
                     PreparedStatement dragonCurrval = dbConnection.prepareStatement(currvalStatement);
                     dragonCurrval.setString(1, "dragon_id_seq");
                     ResultSet currval = dragonCurrval.executeQuery();
@@ -111,20 +110,36 @@ public class DBDataManager implements DataManager<Dragon> {
         }
     }
 
+    public long[] getCoorfinatesIDNPersonID(long dragonId) {
+        long[] resultList = new long[2];
+        // getting coordinates and killer ids
+        try (
+                PreparedStatement coordinatesIdNPersonIdQuery = dbConnection
+                        .prepareStatement(coordinatesIDNPersonIdStatement)) {
+            coordinatesIdNPersonIdQuery.setLong(1, dragonId);
+            ResultSet ids = coordinatesIdNPersonIdQuery.executeQuery();
+            ids.next();
+            long coordinatesId = ids.getLong("coordinates");
+            long personId = ids.getLong("killer");
+
+            resultList[0] = coordinatesId;
+            resultList[1] = personId;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return resultList;
+    }
+
     @Override
-    public void update(long id, Dragon newObject, int userId) {
+    public void update(long dragonId, Dragon newObject, int userId) {
         try {
             dbConnection.setAutoCommit(false);
             Savepoint savepoint = dbConnection.setSavepoint();
 
             // getting coordinates and killer ids
-            PreparedStatement coordinatesIdNPersonIdQuery = dbConnection
-                    .prepareStatement(coordinatesIDNPersonIdStatement);
-            coordinatesIdNPersonIdQuery.setLong(1, id);
-            ResultSet ids = coordinatesIdNPersonIdQuery.executeQuery();
-            ids.next();
-            long coordinatesId = ids.getLong("coordinates");
-            long personId = ids.getLong("killer");
+            long[] coordinateAndPersonIds = getCoorfinatesIDNPersonID(dragonId);
+            long coordinatesId = coordinateAndPersonIds[0];
+            long personId = coordinateAndPersonIds[1];
 
             // updating coordinates
             Coordinates newCoordinates = newObject.getCoordinates();
@@ -171,7 +186,7 @@ public class DBDataManager implements DataManager<Dragon> {
                     personId = addPersonToDB(newKiller);
                     PreparedStatement setKillerId = dbConnection.prepareStatement(updateKillerId);
                     setKillerId.setLong(1, personId);
-                    setKillerId.setLong(2, id);
+                    setKillerId.setLong(2, dragonId);
                     setKillerId.executeUpdate();
                 }
             }
@@ -192,14 +207,14 @@ public class DBDataManager implements DataManager<Dragon> {
 
             dragonStatement.setFloat(4, newObject.getWeight());
             dragonStatement.setString(5, newObject.getColor().name());
-            dragonStatement.setLong(6, id);
+            dragonStatement.setLong(6, dragonId);
 
             try {
                 if (dragonStatement.executeUpdate() > 0) {
                     dbConnection.commit();
-                    Dragon oldObject = getDragonById(id);
+                    Dragon oldObject = getDragonById(dragonId);
                     remove(oldObject, userId);
-                    newObject.setId(id);
+                    newObject.setId(dragonId);
                     addToCollection(newObject);
                     sort();
                 } else {
@@ -222,8 +237,42 @@ public class DBDataManager implements DataManager<Dragon> {
     }
 
     @Override
-    public void clear(int userId) {
+    public int clear(int userId) {
+        List<Long> dragonsIdCreatedByUser = this.getDragonUserCreated(userId);
+        int countRemoved = 0;
 
+        for (long dragonid : dragonsIdCreatedByUser) {
+            // getting coordinates and killer ids
+            long[] coordinateAndPersonIds = getCoorfinatesIDNPersonID(dragonid);
+            long coordinatesId = coordinateAndPersonIds[0];
+            long personId = coordinateAndPersonIds[1];
+
+            // deleting dragon's killer
+            try (PreparedStatement deletePerson = dbConnection.prepareStatement(deletePersonById)) {
+                deletePerson.setLong(1, personId);
+                deletePerson.executeUpdate();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+
+            // deleting dragon's coordinates
+            try (PreparedStatement deleteCoordinates = dbConnection.prepareStatement(deleteCoordinatesById)) {
+                deleteCoordinates.setLong(1, coordinatesId);
+                deleteCoordinates.executeUpdate();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+
+            // deleting dragon by its id
+            try (PreparedStatement deleteDragon = dbConnection.prepareStatement(deleteDragonById)) {
+                deleteDragon.setLong(1, dragonid);
+                deleteDragon.executeUpdate();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+            countRemoved++;
+        }
+        return countRemoved;
     }
 
     @Override
@@ -365,7 +414,7 @@ public class DBDataManager implements DataManager<Dragon> {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return resultListDragonId; 
+        return resultListDragonId;
     }
 
     @Override
@@ -381,6 +430,6 @@ public class DBDataManager implements DataManager<Dragon> {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return resultListDragonId; 
+        return resultListDragonId;
     }
 }

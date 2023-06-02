@@ -22,8 +22,8 @@ public class Clear implements Command {
     @Override
     public String execute(Object[] args, int userId) {
         checkArgsConformity(args);
-        receiver.clear(userId);
-        return "Successfully";
+        int countOfRemoved = receiver.clear(userId);
+        return "Successfully cleared " + countOfRemoved + ".\n You can clear only objects you had created.";
     }
 
     @Override

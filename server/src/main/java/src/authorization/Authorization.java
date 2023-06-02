@@ -2,8 +2,7 @@ package src.authorization;
 
 import module.connection.responseModule.LoginStatus;
 import module.connection.responseModule.RegistrationStatus;
-import module.logic.exceptions.FileFormatException;
-import module.utils.PGParser;
+import src.logic.data.db.DBConfParser;
 
 import java.io.FileNotFoundException;
 import java.nio.charset.StandardCharsets;
@@ -22,15 +21,14 @@ public class Authorization {
 
     private Connection connection;
 
-    public Authorization(String filePath, String dbURL) throws FileNotFoundException, SQLException {
+    public Authorization(DBConfParser conf) throws FileNotFoundException, SQLException {
         try {
-            PGParser pgParser = new PGParser(filePath);
 
             Class.forName("org.postgresql.Driver");
-            connection = DriverManager.getConnection(dbURL, pgParser.getUserName(), pgParser.getPassword());
+            connection = DriverManager.getConnection(conf.getDbURL(), conf.getUserName(), conf.getPassword());
 
             md5 = MessageDigest.getInstance("MD5");
-        } catch (NoSuchAlgorithmException | FileFormatException ignored) {}
+        } catch (NoSuchAlgorithmException ignored) {}
         catch (ClassNotFoundException e) {
             throw new RuntimeException(e);
         }

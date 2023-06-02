@@ -3,6 +3,7 @@ package src.logic.data.db;
 import module.logic.exceptions.FileFormatException;
 
 import java.io.*;
+import java.util.Properties;
 
 public class DBConfParser {
 
@@ -11,28 +12,16 @@ public class DBConfParser {
     private String userName = "postgres";
 
 
-    public DBConfParser(String filePath) throws FileNotFoundException {
-        try(BufferedReader reader = new BufferedReader(
-                new InputStreamReader(
-                        new FileInputStream(filePath)))) {
+    public DBConfParser() {
+        Properties props = new Properties();
+        try {
+            props.load(DBConfParser.class.getResourceAsStream("/config.properties"));
 
-            String line;
-            while ((line = reader.readLine()) != null) {
-                line = line.trim();
-                if(line.equals("")) continue;
-                String[] splitted = line.split(":", 1);
-                if(splitted.length < 2) continue;
-                switch (splitted[0]) {
-                    case "db_url" -> this.dbURL = splitted[1];
-                    case "user_name" -> this.userName = splitted[1];
-                    case "user_password" -> this.password = splitted[1];
-                }
-            }
-
+            dbURL = props.getProperty("db_url");
+            userName = props.getProperty("user_name");
+            password = props.getProperty("user_password");
         } catch (IOException e) {
-            if(e instanceof FileNotFoundException)
-                throw new FileNotFoundException(e.getMessage());
-            throw new RuntimeException(e);
+            e.printStackTrace();
         }
     }
 

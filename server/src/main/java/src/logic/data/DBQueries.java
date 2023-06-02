@@ -70,6 +70,17 @@ public final class DBQueries {
                         DELETE FROM person
                         WHERE id = ?;
                         """;
+
+        public static final String deleteCoordinatesById = """
+                        DELETE FROM coordinates
+                        WHERE id = ?;
+                        """;
+
+        public static final String deleteDragonById = """
+                        DELETE FROM dragon
+                        WHERE id = ?;
+                        """;
+
         public static final String deleteUsersDragonByIds = """
                         DELETE FROM users_dragon
                         WHERE users = ? AND dragon = ?;
@@ -92,5 +103,10 @@ public final class DBQueries {
 
         public static final String getDragonsCreatedByUser = """
                         SELECT dragon FROM users_dragon WHERE users = ?;
+                        """;
+
+        public static final String deleteDragons = """
+                        DELETE FROM dragon
+                        WHERE id = ?;
                         """;
 }
