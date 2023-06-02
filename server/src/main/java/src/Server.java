@@ -5,6 +5,7 @@ import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -25,7 +26,8 @@ import src.authorization.Authorization;
 import src.commands.Invoker;
 import src.connection.DatagramConnection;
 import src.logic.data.Receiver;
-import src.logic.data.db.DBConfParser;
+import src.logic.data.db.ConfigurationParser;
+import src.logic.data.db.DBConnection;
 
 public class Server {
     private final static int SERVER_PORT = 50689;
@@ -51,13 +53,15 @@ public class Server {
         logger.info("Starting server.");
 
         try {
-            DBConfParser conf = new DBConfParser();
+            ConfigurationParser conf = new ConfigurationParser();
 
+            // Connection dbConnection = DriverManager.getConnection(conf.getDbURL(), conf.getUserName(), conf.getPassword());
+            DBConnection dbConnection = new DBConnection(conf.getDbURL(), conf.getUserName(), conf.getPassword());
             connection = new DatagramConnection(SERVER_PORT, true);
-            authorization = new Authorization(conf);
+            authorization = new Authorization(dbConnection.getConnection());
 
             invoker = new Invoker(connection, authorization,
-                    new Receiver(conf));
+                    new Receiver(dbConnection));
 
             logger.info("Invoker and Receiver started.");
         } catch (SocketException e) {
@@ -70,7 +74,7 @@ public class Server {
             throw new RuntimeException(e);
         } catch (FileNotFoundException e) {
             throw new RuntimeException(e);
-        }
+        } 
 
         new Thread(() -> {
             String line;

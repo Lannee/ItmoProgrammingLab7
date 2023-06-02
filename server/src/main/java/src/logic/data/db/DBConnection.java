@@ -7,12 +7,14 @@ import java.sql.SQLException;
 public class DBConnection {
 
     private Connection connection;
-    private String dbURL;
-    private String userName;
-    private String password;
 
     public DBConnection(String dbURL, String userName, String password) throws SQLException {
-        connection = DriverManager.getConnection(dbURL, userName, password);
+        try {
+            Class.forName("org.postgresql.Driver");
+            connection = DriverManager.getConnection(dbURL, userName, password);
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
     }
 
     public Connection getConnection() {

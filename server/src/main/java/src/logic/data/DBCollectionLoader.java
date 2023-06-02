@@ -1,10 +1,10 @@
-package src.logic.data.db;
+package src.logic.data;
 
 import module.stored.Color;
 import module.stored.Coordinates;
 import module.stored.Dragon;
 import module.stored.Person;
-import src.logic.data.CollectionLoader;
+import src.logic.data.db.DBConnection;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;

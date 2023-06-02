@@ -2,7 +2,7 @@ package src.authorization;
 
 import module.connection.responseModule.LoginStatus;
 import module.connection.responseModule.RegistrationStatus;
-import src.logic.data.db.DBConfParser;
+import src.logic.data.db.ConfigurationParser;
 
 import java.io.FileNotFoundException;
 import java.nio.charset.StandardCharsets;
@@ -21,16 +21,12 @@ public class Authorization {
 
     private Connection connection;
 
-    public Authorization(DBConfParser conf) throws FileNotFoundException, SQLException {
+    public Authorization(Connection dbConnection) throws FileNotFoundException, SQLException {
         try {
-
-            Class.forName("org.postgresql.Driver");
-            connection = DriverManager.getConnection(conf.getDbURL(), conf.getUserName(), conf.getPassword());
-
+            this.connection = dbConnection;
             md5 = MessageDigest.getInstance("MD5");
-        } catch (NoSuchAlgorithmException ignored) {}
-        catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
+        } catch (NoSuchAlgorithmException ignored) {
+            throw new RuntimeException();
         }
     }
 
@@ -54,6 +50,7 @@ public class Authorization {
             loggingStatement.setString(1, user);
             loggingStatement.setString(2, passwordHash);
             ResultSet isLoginSuccessfully = loggingStatement.executeQuery();
+            System.out.println("login user done");
             return isLoginSuccessfully.next() ? LoginStatus.SUCCESSFUL : LoginStatus.INVALID_PASSWORD;
         } catch (SQLException e) {
             e.printStackTrace();
@@ -66,7 +63,7 @@ public class Authorization {
             PreparedStatement saltStatement = connection.prepareStatement(getSalt);
             saltStatement.setString(1, user);
             ResultSet saltRS = saltStatement.executeQuery();
-            if(saltRS.next()) {
+            if (saltRS.next()) {
                 return saltRS.getString(1);
             } else {
                 throw new SQLException("User does not exist");
@@ -82,8 +79,10 @@ public class Authorization {
     }
 
     public RegistrationStatus registerUser(String user, String password) {
-        if(isUserExists(user)) return RegistrationStatus.USER_ALREADY_EXISTS;
-        if(password.length() < 5) return RegistrationStatus.SHORT_PASSWORD;
+        if (isUserExists(user))
+            return RegistrationStatus.USER_ALREADY_EXISTS;
+        if (password.length() < 5)
+            return RegistrationStatus.SHORT_PASSWORD;
 
         String salt = generateSalt();
         String passwordHash = getPasswordHash(salt, password);
@@ -93,7 +92,7 @@ public class Authorization {
             registrationStatement.setString(1, user);
             registrationStatement.setString(2, passwordHash);
             registrationStatement.setString(3, salt);
-            if(registrationStatement.executeUpdate() != 0) {
+            if (registrationStatement.executeUpdate() != 0) {
                 return RegistrationStatus.SUCCESSFUL;
             } else {
                 return RegistrationStatus.FAILED;

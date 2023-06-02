@@ -1,8 +1,7 @@
 package src.logic.data;
 
 import module.stored.Dragon;
-import src.logic.data.db.DBCollectionLoader;
-import src.logic.data.db.DBConfParser;
+import src.logic.data.db.ConfigurationParser;
 import src.logic.data.db.DBConnection;
 import src.utils.Formatter;
 import module.utils.ObjectUtils;
@@ -18,7 +17,8 @@ import java.util.function.Predicate;
  * Responsible for performing various actions on the collection
  */
 public class Receiver {
-    //    private final DataManager<Dragon> collection = new CSVFileDataManager<>(Dragon.class);
+    // private final DataManager<Dragon> collection = new
+    // CSVFileDataManager<>(Dragon.class);
     private final DataManager<Dragon> db;
 
     private final List<Dragon> collection = new LinkedList<>();
@@ -28,19 +28,13 @@ public class Receiver {
     ReentrantLock reentrantLockOnWrite = new ReentrantLock();
     ReentrantLock reentrantLockOnRead = new ReentrantLock();
 
-    public Receiver(DBConfParser conf) throws FileNotFoundException {
+    public Receiver(DBConnection dbConnection) throws FileNotFoundException {
 
-        try {
-            dbConnection = new DBConnection(conf.getDbURL(), conf.getUserName(), conf.getPassword());
+        this.dbConnection = dbConnection;
+        CollectionLoader collectionLoader = new DBCollectionLoader(dbConnection);
+        collection.addAll(collectionLoader.getCollection());
 
-            CollectionLoader collectionLoader = new DBCollectionLoader(dbConnection);
-            collection.addAll(collectionLoader.getCollection());
-
-            db = new DBDataManager(dbConnection.getConnection());
-
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
+        db = new DBDataManager(dbConnection.getConnection());
     }
 
     public void add(Object obj, int userId) {
@@ -50,18 +44,20 @@ public class Receiver {
     }
 
     public void update(long id, Object newObject, int userId) {
-        if (id <= 0) throw new NumberFormatException("Incorrect argument value");
-        if(!(newObject instanceof Dragon dragon)) throw new ClassCastException();
+        if (id <= 0)
+            throw new NumberFormatException("Incorrect argument value");
+        if (!(newObject instanceof Dragon dragon))
+            throw new ClassCastException();
 
         reentrantLockOnWrite.lock();
-//        db.update(id, dragon, userId);
+        // db.update(id, dragon, userId);
         reentrantLockOnWrite.unlock();
     }
 
     public String update(long id, int userId) {
         try {
             // Long id = (Long) args[0];
-            
+
             Object obj = this.getElementByFieldValue("id", id);
             if (obj != null) {
                 List<Integer> usersIdCreatedDragonList = this.getUsersIdCreatedDragon(((Dragon) obj).getId());
@@ -100,7 +96,8 @@ public class Receiver {
             ObjectUtils.setFieldValue(obj, "id", id);
             db.add(getStoredType().cast(obj), userId);
 
-        } catch (NoSuchFieldException | IllegalArgumentException impossible) {}
+        } catch (NoSuchFieldException | IllegalArgumentException impossible) {
+        }
         reentrantLockOnWrite.unlock();
     }
 
@@ -132,13 +129,15 @@ public class Receiver {
         return result;
     }
 
-    public <T> Integer countCompareToValueByField(String fieldName, Comparable value, Comparator<Comparable<T>> comparator)
+    public <T> Integer countCompareToValueByField(String fieldName, Comparable value,
+            Comparator<Comparable<T>> comparator)
             throws NumberFormatException, NoSuchFieldException {
         reentrantLockOnRead.lock();
         int counter = 0;
         Field field = db.getClT().getDeclaredField(fieldName);
         field.setAccessible(true);
-//        Comparable givenValue = (Comparable) StringConverter.methodForType.get(field.getType()).apply(value);
+        // Comparable givenValue = (Comparable)
+        // StringConverter.methodForType.get(field.getType()).apply(value);
         if (!ObjectUtils.checkValueForRestrictions(field, value)) {
             throw new NumberFormatException();
         }
@@ -191,9 +190,9 @@ public class Receiver {
 
     public boolean removeFromCollection(Object o, int userId) {
         reentrantLockOnWrite.lock();
-//        boolean result = db.remove(o, userId);
+        // boolean result = db.remove(o, userId);
         reentrantLockOnWrite.unlock();
-//        return result;
+        // return result;
         return true;
     }
 
