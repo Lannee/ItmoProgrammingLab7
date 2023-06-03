@@ -104,9 +104,4 @@ public final class DBQueries {
         public static final String getDragonsCreatedByUser = """
                         SELECT dragon FROM users_dragon WHERE users = ?;
                         """;
-
-        public static final String deleteDragons = """
-                        DELETE FROM dragon
-                        WHERE id = ?;
-                        """;
 }

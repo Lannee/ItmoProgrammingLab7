@@ -231,54 +231,59 @@ public class DBDataManager implements DataManager<Dragon> {
         List<Long> dragonsRemoved = new ArrayList<>();
 
         for (long dragonId : dragonsIdCreatedByUser) {
-            if(removeDragon(dragonId)) {
-                dragonsRemoved.add(dragonId);  
+            if (this.removeDragon(dragonId)) {
+                dragonsRemoved.add(dragonId);
             }
         }
         return dragonsRemoved;
     }
 
     public boolean removeDragon(long dragonId) {
-        // getting coordinates and killer ids
-        Long[] coordinateAndPersonIds = getCoorfinatesIDNPersonID(dragonId);
-        Long coordinatesId = coordinateAndPersonIds[0];
-        Long personId = coordinateAndPersonIds[1];
+        try {
+            dbConnection.setAutoCommit(false);
+            Savepoint savepoint = dbConnection.setSavepoint();
+            
+            // getting coordinates and killer ids
+            Long[] coordinateAndPersonIds = getCoorfinatesIDNPersonID(dragonId);
+            Long coordinatesId = coordinateAndPersonIds[0];
+            Long personId = coordinateAndPersonIds[1];
 
-        System.out.println("Началась возня");
-        System.out.println(personId);
-        if (personId != 0) {
-            // deleting dragon's killer
-            try (PreparedStatement deletePerson = dbConnection.prepareStatement(deletePersonById)) {
-                deletePerson.setLong(1, personId);
-                deletePerson.executeUpdate();
+            // deleting dragon by its id
+            try (PreparedStatement deleteDragon = dbConnection.prepareStatement(deleteDragonById)) {
+                deleteDragon.setLong(1, dragonId);
+                deleteDragon.executeUpdate();
             } catch (SQLException e) {
+                dbConnection.rollback(savepoint);
                 e.printStackTrace();
                 return false;
             }
-        }
-        System.out.println("возня продолжается");
-        System.out.println(dragonId);
+            
+            if (personId != 0) {
+                // deleting dragon's killer
+                try (PreparedStatement deletePerson = dbConnection.prepareStatement(deletePersonById)) {
+                    deletePerson.setLong(1, personId);
+                    deletePerson.executeUpdate();
+                } catch (SQLException e) {
+                    dbConnection.rollback(savepoint);
+                    e.printStackTrace();
+                    return false;
+                }
+            }
 
-        // deleting dragon by its id
-        try (PreparedStatement deleteDragon = dbConnection.prepareStatement(deleteDragonById)) {
-            deleteDragon.setLong(1, dragonId);
-            deleteDragon.executeUpdate();
+            // deleting dragon's coordinates
+            try (PreparedStatement deleteCoordinates = dbConnection.prepareStatement(deleteCoordinatesById)) {
+                deleteCoordinates.setLong(1, coordinatesId);
+                deleteCoordinates.executeUpdate();
+            } catch (SQLException e) {
+                dbConnection.rollback(savepoint);
+                e.printStackTrace();
+                return false;
+            }
+            dbConnection.commit();
         } catch (SQLException e) {
             e.printStackTrace();
             return false;
         }
-
-        System.out.println(coordinatesId);
-        // deleting dragon's coordinates
-        try (PreparedStatement deleteCoordinates = dbConnection.prepareStatement(deleteCoordinatesById)) {
-            deleteCoordinates.setLong(1, coordinatesId);
-            deleteCoordinates.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
-        }
-        System.out.println("возня успешно закончена");
-
         return true;
     }
 

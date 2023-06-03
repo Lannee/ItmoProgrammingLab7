@@ -105,16 +105,14 @@ public class Receiver {
         reentrantLockOnWrite.unlock();
     }
 
-    public int clear(int userId) {
-        reentrantLockOnWrite.lock();
+    public synchronized int clear(int userId) {
         int countRemoved = 0;
         List<Long> removedDragons = db.clear(userId);
         for (long dragonId : removedDragons) {
-            if (this.removeById(dragonId, userId) ) {
+            if (this.removeById(dragonId, userId)) {
                 countRemoved++;
             }
         }
-        reentrantLockOnWrite.unlock();
         return countRemoved;
     }
 
@@ -166,7 +164,7 @@ public class Receiver {
 
     }
 
-    public Dragon getElementByFieldValue(String fieldName, Object value)
+    public synchronized Dragon getElementByFieldValue(String fieldName, Object value)
             throws NumberFormatException, NoSuchFieldException {
         reentrantLockOnRead.lock();
         Field idField;
@@ -198,15 +196,14 @@ public class Receiver {
         return result;
     }
 
-    public boolean removeFromCollection(Object o, int userId) {
+    public synchronized boolean removeFromCollection(Object o, int userId) {
         reentrantLockOnWrite.lock();
         boolean result = this.remove(o, userId);
         reentrantLockOnWrite.unlock();
-        // return result;
-        return true;
+        return result;
     }
 
-    public String removeOn(Predicate<Dragon> filter, boolean showRemoved, int userId) {
+    public synchronized String removeOn(Predicate<Dragon> filter, boolean showRemoved, int userId) {
         if (this.size() == 0) {
             return "Cannot remove since the collection is empty";
         }
@@ -266,24 +263,19 @@ public class Receiver {
         return groups;
     }
 
-    public int getUserIdFromUserName(String userName) {
+    public synchronized int getUserIdFromUserName(String userName) {
         return db.getUserIdFromUserName(userName);
     }
 
-    public Dragon get(int id) {
+    public synchronized Dragon get(int id) {
         return collection.get(id);
     }
 
-    public boolean removeById(long dragonId, int userId) {
-        for (Dragon dragonObj : collection) {
-            if (dragonObj.getId() == dragonId) {
-                return this.remove(dragonObj, userId);
-            }
-        }
-        return false;
+    public synchronized boolean removeById(long dragonId, int userId) {
+        return this.remove(getDragonById(dragonId), userId);
     }
 
-    public boolean remove(Object o, int userId) {
+    public synchronized boolean remove(Object o, int userId) {
         if (!(o instanceof Dragon dragon))
             throw new ClassCastException();
         return collection.remove(o);
@@ -293,15 +285,15 @@ public class Receiver {
         return collection.size();
     }
 
-    public List<Dragon> getElements() {
+    public synchronized List<Dragon> getElements() {
         return getElements(Comparator.naturalOrder());
     }
 
-    public List<Dragon> getElements(Comparator<? super Dragon> sorter) {
+    public synchronized List<Dragon> getElements(Comparator<? super Dragon> sorter) {
         return getElements(sorter, 0, size());
     }
 
-    public List<Dragon> getElements(Comparator<? super Dragon> sorter, int startIndex, int endIndex) {
+    public synchronized List<Dragon> getElements(Comparator<? super Dragon> sorter, int startIndex, int endIndex) {
         List<Dragon> copy = new LinkedList<>(collection);
         copy.sort(sorter);
         return copy.subList(startIndex, endIndex);
@@ -311,7 +303,7 @@ public class Receiver {
         return Dragon.class;
     }
 
-    public void forEach(Consumer<? super Dragon> action) {
+    public synchronized void forEach(Consumer<? super Dragon> action) {
         collection.forEach(action);
     }
 
