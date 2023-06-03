@@ -2,10 +2,10 @@ package src.authorization;
 
 import module.connection.responseModule.LoginStatus;
 import module.connection.responseModule.RegistrationStatus;
-import src.logic.data.db.ConfigurationParser;
 
+import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
-import java.nio.charset.StandardCharsets;
+import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.*;
@@ -43,12 +43,12 @@ public class Authorization {
     }
 
     public LoginStatus loginUser(String user, String password) {
-        String passwordHash = getPasswordHash(getSalt(user), password);
+        byte[] passwordHash = getPasswordHash(getSalt(user), password);
 
         try {
             PreparedStatement loggingStatement = connection.prepareStatement(passwordConfirmation);
             loggingStatement.setString(1, user);
-            loggingStatement.setString(2, passwordHash);
+            loggingStatement.setBytes(2, passwordHash);
             ResultSet isLoginSuccessfully = loggingStatement.executeQuery();
             System.out.println("login user done");
             return isLoginSuccessfully.next() ? LoginStatus.SUCCESSFUL : LoginStatus.INVALID_PASSWORD;
@@ -58,13 +58,13 @@ public class Authorization {
         }
     }
 
-    private String getSalt(String user) {
+    private byte[] getSalt(String user) {
         try {
             PreparedStatement saltStatement = connection.prepareStatement(getSalt);
             saltStatement.setString(1, user);
             ResultSet saltRS = saltStatement.executeQuery();
             if (saltRS.next()) {
-                return saltRS.getString(1);
+                return saltRS.getBytes(1);
             } else {
                 throw new SQLException("User does not exist");
             }
@@ -74,8 +74,15 @@ public class Authorization {
         }
     }
 
-    private String getPasswordHash(String salt, String password) {
-        return new String(md5.digest((pepper + password + salt).getBytes()), StandardCharsets.UTF_8);
+    private byte[] getPasswordHash(byte[] salt, String password) {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try {
+            baos.write(pepper.getBytes());
+            baos.write(password.getBytes());
+            baos.write(salt);
+        } catch (IOException ignored) {}
+
+        return md5.digest(baos.toByteArray());
     }
 
     public RegistrationStatus registerUser(String user, String password) {
@@ -84,14 +91,14 @@ public class Authorization {
         if (password.length() < 5)
             return RegistrationStatus.SHORT_PASSWORD;
 
-        String salt = generateSalt();
-        String passwordHash = getPasswordHash(salt, password);
+        byte[] salt = generateSalt();
+        byte[] passwordHash = getPasswordHash(salt, password);
 
         try {
             PreparedStatement registrationStatement = connection.prepareStatement(registerUser);
             registrationStatement.setString(1, user);
-            registrationStatement.setString(2, passwordHash);
-            registrationStatement.setString(3, salt);
+            registrationStatement.setBytes(2, passwordHash);
+            registrationStatement.setBytes(3, salt);
             if (registrationStatement.executeUpdate() != 0) {
                 return RegistrationStatus.SUCCESSFUL;
             } else {
@@ -104,11 +111,11 @@ public class Authorization {
         }
     }
 
-    private static String generateSalt() {
+    private static byte[] generateSalt() {
         byte[] saltBytes = new byte[4];
 
         new Random().nextBytes(saltBytes);
 
-        return new String(saltBytes, StandardCharsets.UTF_8);
+        return saltBytes;
     }
 }

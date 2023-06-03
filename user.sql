@@ -13,26 +13,16 @@ FROM
 WHERE
       login = ?;
 
-SELECT
-      id
-FROM
-      users
-WHERE
-      login = ?;
+SELECT id
+FROM users
+WHERE login = ?;
 
-INSERT INTO
-      users (login, password, salt)
-VALUES
-      (?, ?, ?);
+INSERT INTO users (login, password, salt)
+VALUES (?, ?, ?);
 
-INSERT INTO
-      user_dragon (users, dragon)
-VALUES
-      (?, ?);
+INSERT INTO users_dragon (users, dragon)
+VALUES (?, ?);
 
-SELECT
-      users.id
-FROM
-      users
-WHERE
-      users.login = ?;
+SELECT id
+FROM users
+WHERE users.login = ?;

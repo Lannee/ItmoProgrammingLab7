@@ -33,8 +33,8 @@ create table Dragon (
 create table users (
     id serial primary key,
     login varchar(50) not null check ( login not like '' ) unique ,
-    password varchar(128) not null,
-    salt varchar(32) not null
+    password bytea not null,
+    salt bytea not null
 );
 
 create table users_dragon (
@@ -102,3 +102,4 @@ WHERE id = ?;
 
 DELETE FROM color cl1 USING color cl2
 WHERE cl1.id > cl2.id AND cl1.color = cl2.color;
+

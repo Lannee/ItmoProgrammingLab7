@@ -1,5 +1,7 @@
 package src.logic.data.db;
 
+import module.logic.exceptions.FileFormatException;
+
 import java.io.*;
 import java.util.Properties;
 
@@ -12,12 +14,14 @@ public class ConfigurationParser {
 
     public ConfigurationParser() {
         Properties props = new Properties();
-        try {
-            props.load(ConfigurationParser.class.getResourceAsStream("/config.properties"));
+        try(InputStream resources = ConfigurationParser.class.getResourceAsStream("/config.properties")) {
 
-            dbURL = props.getProperty("db_url");
-            userName = props.getProperty("user_name");
-            password = props.getProperty("user_password");
+            if(resources != null) {
+                props.load(resources);
+                dbURL = props.getProperty("db_url");
+                userName = props.getProperty("user_name");
+                password = props.getProperty("user_password");
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
