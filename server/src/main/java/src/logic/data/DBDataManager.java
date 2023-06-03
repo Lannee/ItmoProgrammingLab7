@@ -1,28 +1,19 @@
 package src.logic.data;
 
-import module.logic.exceptions.FileFormatException;
-import module.stored.Color;
 import module.stored.Coordinates;
 import module.stored.Dragon;
 import module.stored.Person;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
 import java.sql.*;
-import java.time.OffsetDateTime;
 import java.util.*;
-import java.util.Date;
-import java.util.function.Consumer;
-
 import static src.logic.data.DBQueries.*;
 import static src.authorization.AuthorizationQueries.*;
 
 public class DBDataManager implements DataManager<Dragon> {
 
     private static final Logger logger = LoggerFactory.getLogger(DBDataManager.class);
-
-    private final List<Dragon> collection = new LinkedList<>();
 
     private Connection dbConnection;
 
@@ -36,7 +27,7 @@ public class DBDataManager implements DataManager<Dragon> {
     }
 
     @Override
-    public void add(Dragon element, int userId) {
+    public boolean add(Dragon element, int userId) {
         try {
             dbConnection.setAutoCommit(false);
             Savepoint savepoint = dbConnection.setSavepoint();
@@ -56,7 +47,7 @@ public class DBDataManager implements DataManager<Dragon> {
 
             // creating person
             Person killer = element.getKiller();
-            Integer killer_id = null;
+            Long killer_id = null;
             if (killer != null) {
                 killer_id = addPersonToDB(killer);
             }
@@ -80,7 +71,7 @@ public class DBDataManager implements DataManager<Dragon> {
             dragonStatement.setString(6, element.getColor().name());
 
             if (killer_id != null)
-                dragonStatement.setInt(7, killer_id);
+                dragonStatement.setLong(7, killer_id);
             else
                 dragonStatement.setNull(7, Types.INTEGER);
             Integer dragonId = null;
@@ -94,11 +85,10 @@ public class DBDataManager implements DataManager<Dragon> {
                     element.setId(dragonId);
                     commitAdd(userId, dragonId);
                     dbConnection.commit();
-
-                    collection.add(element);
-                    sort();
+                    return true;
                 } else {
                     dbConnection.rollback(savepoint);
+                    return false;
                 }
             } catch (SQLException e) {
                 dbConnection.rollback(savepoint);
@@ -110,8 +100,8 @@ public class DBDataManager implements DataManager<Dragon> {
         }
     }
 
-    public long[] getCoorfinatesIDNPersonID(long dragonId) {
-        long[] resultList = new long[2];
+    public Long[] getCoorfinatesIDNPersonID(long dragonId) {
+        Long[] resultList = new Long[2];
         // getting coordinates and killer ids
         try (
                 PreparedStatement coordinatesIdNPersonIdQuery = dbConnection
@@ -119,8 +109,8 @@ public class DBDataManager implements DataManager<Dragon> {
             coordinatesIdNPersonIdQuery.setLong(1, dragonId);
             ResultSet ids = coordinatesIdNPersonIdQuery.executeQuery();
             ids.next();
-            long coordinatesId = ids.getLong("coordinates");
-            long personId = ids.getLong("killer");
+            Long coordinatesId = ids.getLong("coordinates");
+            Long personId = ids.getLong("killer");
 
             resultList[0] = coordinatesId;
             resultList[1] = personId;
@@ -131,15 +121,15 @@ public class DBDataManager implements DataManager<Dragon> {
     }
 
     @Override
-    public void update(long dragonId, Dragon newObject, int userId) {
+    public boolean update(long dragonId, Dragon newObject, int userId) {
         try {
             dbConnection.setAutoCommit(false);
             Savepoint savepoint = dbConnection.setSavepoint();
 
             // getting coordinates and killer ids
-            long[] coordinateAndPersonIds = getCoorfinatesIDNPersonID(dragonId);
-            long coordinatesId = coordinateAndPersonIds[0];
-            long personId = coordinateAndPersonIds[1];
+            Long[] coordinateAndPersonIds = getCoorfinatesIDNPersonID(dragonId);
+            Long coordinatesId = coordinateAndPersonIds[0];
+            Long personId = coordinateAndPersonIds[1];
 
             // updating coordinates
             Coordinates newCoordinates = newObject.getCoordinates();
@@ -212,13 +202,11 @@ public class DBDataManager implements DataManager<Dragon> {
             try {
                 if (dragonStatement.executeUpdate() > 0) {
                     dbConnection.commit();
-                    Dragon oldObject = getDragonById(dragonId);
-                    remove(oldObject, userId);
                     newObject.setId(dragonId);
-                    addToCollection(newObject);
-                    sort();
+                    return true;
                 } else {
                     dbConnection.rollback(savepoint);
+                    return false;
                 }
             } catch (SQLException e) {
                 dbConnection.rollback(savepoint);
@@ -243,26 +231,22 @@ public class DBDataManager implements DataManager<Dragon> {
 
         for (long dragonid : dragonsIdCreatedByUser) {
             // getting coordinates and killer ids
-            long[] coordinateAndPersonIds = getCoorfinatesIDNPersonID(dragonid);
-            long coordinatesId = coordinateAndPersonIds[0];
-            long personId = coordinateAndPersonIds[1];
+            Long[] coordinateAndPersonIds = getCoorfinatesIDNPersonID(dragonid);
+            Long coordinatesId = coordinateAndPersonIds[0];
+            Long personId = coordinateAndPersonIds[1];
+            System.out.println(personId);
 
-            // deleting dragon's killer
-            try (PreparedStatement deletePerson = dbConnection.prepareStatement(deletePersonById)) {
-                deletePerson.setLong(1, personId);
-                deletePerson.executeUpdate();
-            } catch (SQLException e) {
-                e.printStackTrace();
+            if (personId != 0) {
+                // deleting dragon's killer
+                try (PreparedStatement deletePerson = dbConnection.prepareStatement(deletePersonById)) {
+                    deletePerson.setLong(1, personId);
+                    deletePerson.executeUpdate();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
             }
 
-            // deleting dragon's coordinates
-            try (PreparedStatement deleteCoordinates = dbConnection.prepareStatement(deleteCoordinatesById)) {
-                deleteCoordinates.setLong(1, coordinatesId);
-                deleteCoordinates.executeUpdate();
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-
+            System.out.println(dragonid);
             // deleting dragon by its id
             try (PreparedStatement deleteDragon = dbConnection.prepareStatement(deleteDragonById)) {
                 deleteDragon.setLong(1, dragonid);
@@ -270,61 +254,22 @@ public class DBDataManager implements DataManager<Dragon> {
             } catch (SQLException e) {
                 e.printStackTrace();
             }
+
+            System.out.println(coordinatesId);
+            // deleting dragon's coordinates
+            try (PreparedStatement deleteCoordinates = dbConnection.prepareStatement(deleteCoordinatesById)) {
+                deleteCoordinates.setLong(1, coordinatesId);
+                deleteCoordinates.executeUpdate();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+            
             countRemoved++;
         }
         return countRemoved;
     }
 
-    @Override
-    public Dragon get(int id) {
-        return collection.get(id);
-    }
-
-    @Override
-    public boolean remove(Object o, int userId) {
-        if (!(o instanceof Dragon dragon))
-            throw new ClassCastException();
-        return collection.remove(o);
-    }
-
-    @Override
-    public int size() {
-        return collection.size();
-    }
-
-    @Override
-    public List<Dragon> getElements() {
-        return getElements(Comparator.naturalOrder());
-    }
-
-    @Override
-    public List<Dragon> getElements(Comparator<? super Dragon> sorter) {
-        return getElements(sorter, 0, size());
-    }
-
-    @Override
-    public List<Dragon> getElements(Comparator<? super Dragon> sorter, int startIndex, int endIndex) {
-        List<Dragon> copy = new LinkedList<>(collection);
-        copy.sort(sorter);
-        return copy.subList(startIndex, endIndex);
-    }
-
-    @Override
-    public void save() {
-
-    }
-
-    @Override
-    public Class<Dragon> getClT() {
-        return Dragon.class;
-    }
-
-    @Override
-    public void forEach(Consumer<? super Dragon> action) {
-        collection.forEach(action);
-    }
-
-    private int addPersonToDB(Person person) throws SQLException {
+    private Long addPersonToDB(Person person) throws SQLException {
         PreparedStatement personStatement = dbConnection.prepareStatement(personAddStatement);
         personStatement.setString(1, person.getName());
 
@@ -346,26 +291,10 @@ public class DBDataManager implements DataManager<Dragon> {
             personCurrval.setString(1, "person_id_seq");
             ResultSet rs1 = personCurrval.executeQuery();
             rs1.next();
-            return rs1.getInt(1);
+            return rs1.getLong(1);
         } else {
-            return 0;
+            return Long.valueOf(0);
         }
-    }
-
-    private Dragon getDragonById(long id) {
-        for (Dragon dragon : collection) {
-            if (dragon.getId() == id)
-                return dragon;
-        }
-        return null;
-    }
-
-    public void addToCollection(Dragon newObject) {
-        collection.add(collection.size(), newObject);
-    }
-
-    public void sort() {
-        Collections.sort(collection);
     }
 
     public void commitAdd(int userId, int dragonId) {

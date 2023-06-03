@@ -18,10 +18,11 @@ public interface DataManager<T extends Comparable<? super T>> {
     /**
      * Adds element to the collection
      * @param element
+     * @return 
      */
-    void add(T element, int userId);
+    boolean add(T element, int userId);
 
-    void update(long id, T newObject, int userId);
+    boolean update(long id, T newObject, int userId);
 
     /**
      * Add all specified elements to the collection
@@ -39,43 +40,43 @@ public interface DataManager<T extends Comparable<? super T>> {
      * @param id
      * @return element with given index
      */
-    T get(int id);
+    // T get(int id);
 
     /**
      * Removes specified element from the collection
      * @param o
      * @return true - if element was removed successfully, else - false
      */
-    boolean remove(Object o, int userId);
+    // boolean remove(Object o, int userId);
 
     /**
      * @return size of the collection
      */
-    int size();
+    // int size();
 
     /**
      * @return collection elements in standard ordering
      */
-    List<T> getElements();
+    // List<T> getElements();
 
     /**
      * @param sorter
      * @return collection elements sorted by given sorter
      */
-    List<T> getElements(Comparator<? super T> sorter);
+    // List<T> getElements(Comparator<? super T> sorter);
 
-    List<T> getElements(Comparator<? super T> sorter, int startIndex, int endIndex);
+    // List<T> getElements(Comparator<? super T> sorter, int startIndex, int endIndex);
 
     /**
      * Saves changes in the collection to the storage
      */
-    void save();
+    // void save();
 
     /**
      * @return Type of the stored elements
      */
-    Class<T> getClT();
-    void forEach(Consumer<? super T> act3ion);
+    // Class<T> getClT();
+    // void forEach(Consumer<? super T> action);
 
     int getUserIdFromUserName(String userName);
 

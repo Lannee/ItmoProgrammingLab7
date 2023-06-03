@@ -1,7 +1,5 @@
 package src.logic.data.db;
 
-import module.logic.exceptions.FileFormatException;
-
 import java.io.*;
 import java.util.Properties;
 

@@ -11,6 +11,7 @@ import java.lang.reflect.Field;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 /**
@@ -34,12 +35,15 @@ public class Receiver {
         CollectionLoader collectionLoader = new DBCollectionLoader(dbConnection);
         collection.addAll(collectionLoader.getCollection());
 
+        System.out.println(collection.size());
+
         db = new DBDataManager(dbConnection.getConnection());
     }
 
     public void add(Object obj, int userId) {
         reentrantLockOnWrite.lock();
-        db.add(getStoredType().cast(obj), userId);
+        if (db.add(getStoredType().cast(obj), userId))
+            collection.add(getStoredType().cast(obj));
         reentrantLockOnWrite.unlock();
     }
 
@@ -117,7 +121,7 @@ public class Receiver {
 
     public String getFormattedCollection(Comparator<Dragon> sorter) {
         reentrantLockOnRead.lock();
-        String result = Formatter.format(db.getElements(sorter), db.getClT());
+        String result = Formatter.format(this.getElements(sorter), this.getClT());
         reentrantLockOnRead.unlock();
         return result;
     }
@@ -134,14 +138,14 @@ public class Receiver {
             throws NumberFormatException, NoSuchFieldException {
         reentrantLockOnRead.lock();
         int counter = 0;
-        Field field = db.getClT().getDeclaredField(fieldName);
+        Field field = this.getClT().getDeclaredField(fieldName);
         field.setAccessible(true);
         // Comparable givenValue = (Comparable)
         // StringConverter.methodForType.get(field.getType()).apply(value);
         if (!ObjectUtils.checkValueForRestrictions(field, value)) {
             throw new NumberFormatException();
         }
-        for (Object element : db.getElements()) {
+        for (Object element : this.getElements()) {
             try {
                 if (comparator.compare(value, (Comparable) field.get(element)) > 0)
                     counter++;
@@ -153,16 +157,16 @@ public class Receiver {
     }
 
     public synchronized void saveCollection() {
-        db.save();
+
     }
 
     public Dragon getElementByFieldValue(String fieldName, Object value)
             throws NumberFormatException, NoSuchFieldException {
         reentrantLockOnRead.lock();
         Field idField;
-        idField = db.getClT().getDeclaredField(fieldName);
+        idField = this.getClT().getDeclaredField(fieldName);
         idField.setAccessible(true);
-        for (Dragon e : db.getElements()) {
+        for (Dragon e : this.getElements()) {
             try {
                 if (idField.get(e).equals(value)) {
                     reentrantLockOnRead.unlock();
@@ -177,14 +181,14 @@ public class Receiver {
 
     public Dragon getElementByIndex(int index) {
         reentrantLockOnRead.lock();
-        Dragon result = db.get(index);
+        Dragon result = this.get(index);
         reentrantLockOnRead.unlock();
         return result;
     }
 
     public int collectionSize() {
         reentrantLockOnRead.unlock();
-        int result = db.size();
+        int result = this.size();
         return result;
     }
 
@@ -197,12 +201,12 @@ public class Receiver {
     }
 
     public String removeOn(Predicate<Dragon> filter, boolean showRemoved, int userId) {
-        if (db.size() == 0) {
+        if (this.size() == 0) {
             return "Cannot remove since the collection is empty";
         }
         reentrantLockOnWrite.lock();
         List<Dragon> removed = new LinkedList<>();
-        for (Dragon element : db.getElements()) {
+        for (Dragon element : this.getElements()) {
             if (filter.test(element)) {
                 removed.add(element);
                 removeFromCollection(element, userId);
@@ -210,7 +214,7 @@ public class Receiver {
         }
 
         if (showRemoved) {
-            String result = Formatter.format(removed, db.getClT());
+            String result = Formatter.format(removed, this.getClT());
             reentrantLockOnWrite.unlock();
             return result;
         }
@@ -219,11 +223,11 @@ public class Receiver {
     }
 
     public String removeByIndex(int index, boolean showRemoved, int userId) {
-        if (db.size() == 0) {
+        if (this.size() == 0) {
             return "Cannot remove since the collection is empty";
         }
 
-        if (index >= db.size()) {
+        if (index >= this.size()) {
             return "Cannot remove from collection: index is out of bound";
         }
 
@@ -232,15 +236,15 @@ public class Receiver {
     }
 
     public Class<Dragon> getStoredType() {
-        return db.getClT();
+        return this.getClT();
     }
 
     public Map<Object, Integer> groupByField(String fieldName) throws NoSuchFieldException {
         reentrantLockOnRead.lock();
         Map<Object, Integer> groups = new HashMap<>();
-        Field field = db.getClT().getDeclaredField(fieldName);
+        Field field = this.getClT().getDeclaredField(fieldName);
         field.setAccessible(true);
-        for (Object element : db.getElements()) {
+        for (Object element : this.getElements()) {
             try {
                 Object key = field.get(element);
                 if (groups.containsKey(key)) {
@@ -258,5 +262,57 @@ public class Receiver {
 
     public int getUserIdFromUserName(String userName) {
         return db.getUserIdFromUserName(userName);
+    }
+
+    public Dragon get(int id) {
+        return collection.get(id);
+    }
+
+    public boolean remove(Object o, int userId) {
+        if (!(o instanceof Dragon dragon))
+            throw new ClassCastException();
+        return collection.remove(o);
+    }
+
+    public int size() {
+        return collection.size();
+    }
+
+    public List<Dragon> getElements() {
+        return getElements(Comparator.naturalOrder());
+    }
+
+    public List<Dragon> getElements(Comparator<? super Dragon> sorter) {
+        return getElements(sorter, 0, size());
+    }
+
+    public List<Dragon> getElements(Comparator<? super Dragon> sorter, int startIndex, int endIndex) {
+        List<Dragon> copy = new LinkedList<>(collection);
+        copy.sort(sorter);
+        return copy.subList(startIndex, endIndex);
+    }
+
+    public Class<Dragon> getClT() {
+        return Dragon.class;
+    }
+
+    public void forEach(Consumer<? super Dragon> action) {
+        collection.forEach(action);
+    }
+
+    private Dragon getDragonById(long id) {
+        for (Dragon dragon : collection) {
+            if (dragon.getId() == id)
+                return dragon;
+        }
+        return null;
+    }
+
+    public void addToCollection(Dragon newObject) {
+        collection.add(collection.size(), newObject);
+    }
+
+    public void sort() {
+        Collections.sort(collection);
     }
 }

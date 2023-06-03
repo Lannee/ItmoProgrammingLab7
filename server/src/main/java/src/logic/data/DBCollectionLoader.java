@@ -34,7 +34,7 @@ public class DBCollectionLoader implements CollectionLoader {
                 Dragon dragon = new Dragon();
                 dragon.setId(rs.getLong("id"));
                 dragon.setName(rs.getString("name"));
-
+                
                 rs.getInt("coordinatesid");
                 if (!rs.wasNull()) {
                     Coordinates coordinates = new Coordinates();

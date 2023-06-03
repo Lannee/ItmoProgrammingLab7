@@ -39,14 +39,14 @@ create table users (
 
 create table users_dragon (
     users integer references users not null,
-    dragon integer references dragon not null,
+    dragon integer references dragon on delete cascade,
     primary key (users, dragon)
 );
 
 insert into color (color)
 values ('RED'),
-       ('YELLOW'),
-       ('BROWN');
+    ('YELLOW'),
+    ('BROWN');
 
 insert into person (name, birthday, height, passportID, heirColor)
 values (

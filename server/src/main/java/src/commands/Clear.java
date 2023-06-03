@@ -23,7 +23,7 @@ public class Clear implements Command {
     public String execute(Object[] args, int userId) {
         checkArgsConformity(args);
         int countOfRemoved = receiver.clear(userId);
-        return "Successfully cleared " + countOfRemoved + ".\n You can clear only objects you had created.";
+        return "Successfully cleared " + countOfRemoved + ".\nYou can clear only objects you had created.";
     }
 
     @Override

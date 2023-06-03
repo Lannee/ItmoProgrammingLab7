@@ -137,18 +137,18 @@ public class Server {
         }
     }
 
-    public static String getFilePath(String[] args) {
-        // return "base.csv";
+    // public static String getFilePath(String[] args) {
+    //     // return "base.csv";
 
-        if (args.length == 0) {
-            logger.error("Incorrect number of arguments.");
-            System.exit(2);
-        }
-        String filePath = System.getenv().get(args[0]);
-        if (filePath == null) {
-            logger.error("Environment variable \"" + args[0] + "\" does not exist.");
-            System.exit(1);
-        }
-        return filePath;
-    }
+    //     if (args.length == 0) {
+    //         logger.error("Incorrect number of arguments.");
+    //         System.exit(2);
+    //     }
+    //     String filePath = System.getenv().get(args[0]);
+    //     if (filePath == null) {
+    //         logger.error("Environment variable \"" + args[0] + "\" does not exist.");
+    //         System.exit(1);
+    //     }
+    //     return filePath;
+    // }
 }
