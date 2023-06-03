@@ -54,7 +54,8 @@ public class Receiver {
             throw new ClassCastException();
 
         reentrantLockOnWrite.lock();
-        // db.update(id, dragon, userId);
+        db.update(id, dragon, userId); 
+        
         reentrantLockOnWrite.unlock();
     }
 

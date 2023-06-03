@@ -33,7 +33,6 @@ public class Update implements Command {
             receiver.update(id, createdObject, userId);
             return "Object with " + args()[0].getArgumentName() + " " + id + " was successfully updated";
         } else {
-            
             return receiver.update(id, userId);
         }
 
