@@ -31,10 +31,10 @@ public class RemoveById implements Command {
             Object obj = receiver.getElementByFieldValue(args()[0].getArgumentName(), id);
             if (obj != null) {
                 List<Long> listOfDragonCreatedByUser = receiver.getDragonUserCreated(userId);
-                if (listOfDragonCreatedByUser.isEmpty()) {
+                if (!listOfDragonCreatedByUser.contains(id)) {
                     return "Can not remove this object out of database and collection, because object with typed id had created by another user.\nYou can remove only objects that you had created.";
                 }
-                receiver.removeOn(e -> e == obj, false, userId);
+                receiver.removeDragon(id, userId);
                 return "Object with " + args()[0] + " " + id + " was successfully removed";
             } else {
                 return "Unable to remove element from the collection. No element with such " + args()[0];

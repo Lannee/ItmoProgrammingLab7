@@ -105,7 +105,19 @@ public class Receiver {
         reentrantLockOnWrite.unlock();
     }
 
-    public synchronized int clear(int userId) {
+    public boolean removeDragon(long dragonId, int userId) {
+        reentrantLockOnWrite.lock();
+        if (db.removeDragon(dragonId)){
+            if (this.removeById(dragonId, userId)) {
+                return true;
+            }
+        }
+        reentrantLockOnWrite.unlock();
+        return false;
+    }
+
+    public int clear(int userId) {
+        reentrantLockOnWrite.lock();
         int countRemoved = 0;
         List<Long> removedDragons = db.clear(userId);
         for (long dragonId : removedDragons) {
@@ -113,6 +125,7 @@ public class Receiver {
                 countRemoved++;
             }
         }
+        reentrantLockOnWrite.unlock();
         return countRemoved;
     }
 
