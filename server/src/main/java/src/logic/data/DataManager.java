@@ -33,7 +33,7 @@ public interface DataManager<T extends Comparable<? super T>> {
     /**
      * Clears collection
      */
-    int clear(int userId);
+    List<Long> clear(int userId);
 
     /**
      *

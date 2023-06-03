@@ -107,7 +107,13 @@ public class Receiver {
 
     public int clear(int userId) {
         reentrantLockOnWrite.lock();
-        int countRemoved = db.clear(userId);
+        int countRemoved = 0;
+        List<Long> removedDragons = db.clear(userId);
+        for (long dragonId : removedDragons) {
+            if (this.removeById(dragonId, userId) ) {
+                countRemoved++;
+            }
+        }
         reentrantLockOnWrite.unlock();
         return countRemoved;
     }
@@ -194,7 +200,7 @@ public class Receiver {
 
     public boolean removeFromCollection(Object o, int userId) {
         reentrantLockOnWrite.lock();
-        // boolean result = db.remove(o, userId);
+        boolean result = this.remove(o, userId);
         reentrantLockOnWrite.unlock();
         // return result;
         return true;
@@ -266,6 +272,15 @@ public class Receiver {
 
     public Dragon get(int id) {
         return collection.get(id);
+    }
+
+    public boolean removeById(long dragonId, int userId) {
+        for (Dragon dragonObj : collection) {
+            if (dragonObj.getId() == dragonId) {
+                return this.remove(dragonObj, userId);
+            }
+        }
+        return false;
     }
 
     public boolean remove(Object o, int userId) {
