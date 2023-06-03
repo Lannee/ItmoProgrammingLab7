@@ -1,6 +1,6 @@
 package src.logic.data.db;
 
-import module.logic.exceptions.FileFormatException;
+import src.utils.PGParser;
 
 import java.io.*;
 import java.util.Properties;
@@ -8,7 +8,7 @@ import java.util.Properties;
 public class ConfigurationParser {
 
     private String dbURL = "jdbc:postgresql://localhost:5432/postgres";
-    private String password = "";
+    private String password = "password";
     private String userName = "postgres";
 
 
@@ -19,6 +19,16 @@ public class ConfigurationParser {
             if(resources != null) {
                 props.load(resources);
                 dbURL = props.getProperty("db_url");
+
+                String pgpass = props.getProperty("pgpass");
+                if(pgpass != null) {
+                    try {
+                        PGParser pgParser = new PGParser(pgpass);
+                        userName = pgParser.getUserName();
+                        password = pgParser.getPassword();
+                    } catch (Exception ignored) {}
+                }
+
                 userName = props.getProperty("user_name");
                 password = props.getProperty("user_password");
             }
