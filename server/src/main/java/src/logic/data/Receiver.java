@@ -55,6 +55,7 @@ public class Receiver {
 
         reentrantLockOnWrite.lock();
         if (db.update(id, dragon, userId)) {
+            collection.remove(dragon);
             collection.add(dragon);
         }
 
