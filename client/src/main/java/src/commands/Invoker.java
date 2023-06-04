@@ -150,11 +150,13 @@ public class Invoker {
                 this.userPassword = null;
                 SessionCash.clearCash();
                 return "You have successfully logged out";
-            case AUTHENTICATION_COMMAND:
+            case LOG_IN_COMMAND:
                 if(SessionCash.loadState()) {
                     this.userName = SessionCash.getUserName();
                     this.userPassword = SessionCash.getPassword();
-                } else {
+                }
+            case AUTHENTICATION_COMMAND:
+                if(this.userName == null && this.userPassword == null) {
                     Client.out.print("Enter user name : ");
                     this.userName = Client.in.readLine().trim();
                     Client.out.print("Enter password : ");
@@ -176,7 +178,7 @@ public class Invoker {
                     this.userPassword = null;
                 }
 
-                return response.getResponse();
+                return response.getResponse() + "\nWelcome, " + this.userName + "!";
             default:
                 // If command is NON_ARGUMENT or LINE_ARGUMENT
                 response = sendRequestAndGetResponse(RequestFactory.createRequest(commandName, args, TypeOfRequest.CONFIRMATION, userName, userPassword));

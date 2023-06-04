@@ -10,7 +10,7 @@ public class LoginCommand implements Command {
     public final static CommandArgument[] args = { new CommandArgument("login", String.class, false),
             new CommandArgument("password", String.class, false) };
 
-    public final static CommandType commandType = CommandType.AUTHENTICATION_COMMAND;
+    public final static CommandType commandType = CommandType.LOG_IN_COMMAND;
 
     private Authorization authorization;
 
