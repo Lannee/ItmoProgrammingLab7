@@ -144,6 +144,12 @@ public class Invoker {
 
             case SCRIPT_ARGUMENT_COMMAND:
                 return execute_script((String) args[0]);
+            case LOG_OUT_COMMAND:
+                isAuthed = false;
+                this.userName = null;
+                this.userPassword = null;
+                SessionCash.clearCash();
+                return "You have successfully logged out";
             case AUTHENTICATION_COMMAND:
                 if(SessionCash.loadState()) {
                     this.userName = SessionCash.getUserName();

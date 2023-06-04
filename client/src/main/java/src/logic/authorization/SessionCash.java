@@ -55,4 +55,10 @@ public class SessionCash {
         }
         return true;
     }
+
+    public static void clearCash() {
+        try {
+            new FileWriter(cashFile, false).close();
+        } catch (IOException e) {}
+    }
 }

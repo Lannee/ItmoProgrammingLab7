@@ -51,6 +51,7 @@ public class Invoker {
         declaredAuthenticatedClientCommands.put("remove_greater", new RemoveGreater(receiver));
         declaredAuthenticatedClientCommands.put("count_greater_than_weight", new CountGreaterThanWeight(receiver));
         declaredAuthenticatedClientCommands.put("group_counting_by_id", new GroupCountingById(receiver));
+        declaredAuthenticatedClientCommands.put("log_out", new LogOut());
         Command exitClient = new ExitClient();
         exitClient.setConnection(connection);
         declaredAuthenticatedClientCommands.put("exit", exitClient);
