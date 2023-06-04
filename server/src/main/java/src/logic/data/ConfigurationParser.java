@@ -1,4 +1,4 @@
-package src.logic.data.db;
+package src.logic.data;
 
 import src.utils.PGParser;
 

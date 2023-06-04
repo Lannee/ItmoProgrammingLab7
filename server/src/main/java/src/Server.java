@@ -1,11 +1,8 @@
 package src;
 
-import java.io.FileNotFoundException;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
-import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -26,8 +23,9 @@ import src.authorization.Authorization;
 import src.commands.Invoker;
 import src.connection.DatagramConnection;
 import src.logic.data.Receiver;
-import src.logic.data.db.ConfigurationParser;
+import src.logic.data.ConfigurationParser;
 import src.logic.data.db.DBConnection;
+import src.logic.data.db.DBInitializer;
 
 public class Server {
     private final static int SERVER_PORT = 50689;
@@ -39,7 +37,6 @@ public class Server {
     public static final OutputManager out = new ConsoleOutputManager();
 
     private IConnection connection;
-    private Connection dbConnection;
 
     private Invoker invoker;
     private Authorization authorization;
@@ -57,9 +54,10 @@ public class Server {
 
             // Connection dbConnection = DriverManager.getConnection(conf.getDbURL(), conf.getUserName(), conf.getPassword());
             DBConnection dbConnection = new DBConnection(conf.getDbURL(), conf.getUserName(), conf.getPassword());
+            DBInitializer.configureDB(dbConnection.getConnection());
+
             connection = new DatagramConnection(SERVER_PORT, true);
             authorization = new Authorization(dbConnection.getConnection());
-
             invoker = new Invoker(connection, authorization,
                     new Receiver(dbConnection));
 
@@ -71,7 +69,9 @@ public class Server {
             running = false;
             logger.error("Unknown host.");
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            e.printStackTrace();
+            logger.error(e.getMessage());
+            return;
         }
 
         new Thread(() -> {

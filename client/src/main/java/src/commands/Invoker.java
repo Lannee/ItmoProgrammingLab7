@@ -176,9 +176,10 @@ public class Invoker {
                 } else {
                     this.userName = null;
                     this.userPassword = null;
+                    SessionCash.clearCash();
                 }
 
-                return userName != null
+                return this.userName != null
                         ?  response.getResponse() + "\nWelcome, " + this.userName + " !"
                         : response.getResponse();
             default:

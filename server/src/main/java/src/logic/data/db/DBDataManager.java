@@ -1,14 +1,15 @@
-package src.logic.data;
+package src.logic.data.db;
 
 import module.stored.Coordinates;
 import module.stored.Dragon;
 import module.stored.Person;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import src.logic.data.DataManager;
 
 import java.sql.*;
 import java.util.*;
-import static src.logic.data.DBQueries.*;
+import static src.logic.data.db.DBQueries.*;
 import static src.authorization.AuthorizationQueries.*;
 
 public class DBDataManager implements DataManager<Dragon> {
@@ -17,7 +18,7 @@ public class DBDataManager implements DataManager<Dragon> {
 
     private Connection dbConnection;
 
-    DBDataManager(Connection connection) {
+    public DBDataManager(Connection connection) {
         this.dbConnection = connection;
     }
 

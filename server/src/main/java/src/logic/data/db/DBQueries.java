@@ -1,4 +1,4 @@
-package src.logic.data;
+package src.logic.data.db;
 
 public final class DBQueries {
         public static final String initializationQuery = """

@@ -1,10 +1,10 @@
-package src.logic.data;
+package src.logic.data.db;
 
 import module.stored.Color;
 import module.stored.Coordinates;
 import module.stored.Dragon;
 import module.stored.Person;
-import src.logic.data.db.DBConnection;
+import src.logic.data.CollectionLoader;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -14,7 +14,7 @@ import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
-import static src.logic.data.DBQueries.initializationQuery;
+import static src.logic.data.db.DBQueries.initializationQuery;
 
 public class DBCollectionLoader implements CollectionLoader {
 
