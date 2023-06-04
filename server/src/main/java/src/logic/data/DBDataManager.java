@@ -225,9 +225,18 @@ public class DBDataManager implements DataManager<Dragon> {
     }
 
     @Override
+    public boolean removeByIndex(long dragonId, int userId) {
+        List<Long> dragonsIdCreatedByUser = this.getDragonUserCreated(userId);
+
+        if (dragonsIdCreatedByUser.contains(dragonId) && this.removeDragon(dragonId)) {
+            return true;
+        }
+        return false;
+    }
+
+    @Override
     public List<Long> clear(int userId) {
         List<Long> dragonsIdCreatedByUser = this.getDragonUserCreated(userId);
-        System.out.println(dragonsIdCreatedByUser);
         List<Long> dragonsRemoved = new ArrayList<>();
 
         for (long dragonId : dragonsIdCreatedByUser) {
@@ -242,7 +251,7 @@ public class DBDataManager implements DataManager<Dragon> {
         try {
             dbConnection.setAutoCommit(false);
             Savepoint savepoint = dbConnection.setSavepoint();
-            
+
             // getting coordinates and killer ids
             Long[] coordinateAndPersonIds = getCoordinatesIDPPersonID(dragonId);
             Long coordinatesId = coordinateAndPersonIds[0];
@@ -257,7 +266,7 @@ public class DBDataManager implements DataManager<Dragon> {
                 e.printStackTrace();
                 return false;
             }
-            
+
             if (personId != 0) {
                 // deleting dragon's killer
                 try (PreparedStatement deletePerson = dbConnection.prepareStatement(deletePersonById)) {

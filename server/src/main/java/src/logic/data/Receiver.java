@@ -226,8 +226,10 @@ public class Receiver {
         List<Dragon> removed = new LinkedList<>();
         for (Dragon element : this.getElements()) {
             if (filter.test(element)) {
-                removed.add(element);
-                removeFromCollection(element, userId);
+                if (db.removeByIndex(element.getId(), userId)) {
+                    removed.add(element);
+                    removeFromCollection(element, userId);
+                }
             }
         }
 
@@ -236,6 +238,7 @@ public class Receiver {
             reentrantLockOnWrite.unlock();
             return result;
         }
+        reentrantLockOnWrite.unlock();
 
         return "";
     }
@@ -248,9 +251,12 @@ public class Receiver {
         if (index >= this.size()) {
             return "Cannot remove from collection: index is out of bound";
         }
-
-        Object obj = getElementByIndex(index);
-        return removeOn(e -> e == obj, showRemoved, userId);
+        if (db.removeByIndex(index, userId)) {
+            Object obj = getElementByIndex(index);
+            return removeOn(e -> e == obj, showRemoved, userId);
+        } else {
+            return "Failed to remove.";
+        }
     }
 
     public Class<Dragon> getStoredType() {

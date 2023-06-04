@@ -85,4 +85,6 @@ public interface DataManager<T extends Comparable<? super T>> {
     List<Long> getDragonUserCreated(int userId);
 
     public boolean removeDragon(long dragonId);
+
+    public boolean removeByIndex(long dragonId, int userId);
 }
