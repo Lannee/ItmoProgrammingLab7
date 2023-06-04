@@ -68,7 +68,7 @@ public class Receiver {
                 List<Integer> usersIdCreatedDragonList = this.getUsersIdCreatedDragon(((Dragon) obj).getId());
                 if (usersIdCreatedDragonList != null) {
                     if (!usersIdCreatedDragonList.contains(userId)) {
-                        return "You have not created this Dragon. \nYou can update only objects that you had created.";
+                        return "You have not created this Dragon. \nYou can update only objects you had created.";
                     }
                 }
                 return "WAITING";
@@ -108,7 +108,7 @@ public class Receiver {
 
     public boolean removeDragon(long dragonId, int userId) {
         reentrantLockOnWrite.lock();
-        if (db.removeDragon(dragonId)){
+        if (db.removeDragon(dragonId)) {
             if (this.removeById(dragonId, userId)) {
                 return true;
             }
@@ -210,14 +210,14 @@ public class Receiver {
         return result;
     }
 
-    public synchronized boolean removeFromCollection(Object o, int userId) {
+    public boolean removeFromCollection(Object o, int userId) {
         reentrantLockOnWrite.lock();
         boolean result = this.remove(o, userId);
         reentrantLockOnWrite.unlock();
         return result;
     }
 
-    public synchronized String removeOn(Predicate<Dragon> filter, boolean showRemoved, int userId) {
+    public String removeOn(Predicate<Dragon> filter, boolean showRemoved, int userId) {
         if (this.size() == 0) {
             return "Cannot remove since the collection is empty";
         }
@@ -239,7 +239,7 @@ public class Receiver {
         }
         reentrantLockOnWrite.unlock();
 
-        return "";
+        return "Successfully";
     }
 
     public String removeByIndex(int index, boolean showRemoved, int userId) {
@@ -250,12 +250,17 @@ public class Receiver {
         if (index >= this.size()) {
             return "Cannot remove from collection: index is out of bound";
         }
-        if (db.removeByIndex(index, userId)) {
-            Object obj = getElementByIndex(index);
-            return removeOn(e -> e == obj, showRemoved, userId);
-        } else {
-            return "Failed to remove.";
+
+        List<Long> dragonsCreatedByUser = this.getDragonUserCreated(userId);
+
+        if (dragonsCreatedByUser.size() == 0) {
+            return "You have not created any dragons.\nYou can remove only objects you had created.";
         }
+
+        long dragonId = dragonsCreatedByUser.get(0);
+
+        Object obj = this.getDragonById(dragonId);
+        return removeOn(e -> e == obj, showRemoved, userId);
     }
 
     public Class<Dragon> getStoredType() {
