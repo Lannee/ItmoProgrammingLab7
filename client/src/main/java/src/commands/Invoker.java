@@ -14,6 +14,7 @@ import module.logic.exceptions.InvalidResponseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import src.Client;
+import src.logic.authorization.SessionCash;
 import src.logic.callers.ArgumentCaller;
 import src.logic.callers.Callable;
 import src.utils.StringConverter;
@@ -144,12 +145,17 @@ public class Invoker {
             case SCRIPT_ARGUMENT_COMMAND:
                 return execute_script((String) args[0]);
             case AUTHENTICATION_COMMAND:
-                Client.out.print("Enter user name : ");
-                this.userName = Client.in.readLine().trim();
-                Client.out.print("Enter password : ");
-                this.userPassword = Client.in.readLine(true).trim();
-                if(this.userName.equals("")) return "Invalid user name";
-                if(this.userPassword.equals("")) return "Password cannot be blank";
+                if(SessionCash.loadState()) {
+                    this.userName = SessionCash.getUserName();
+                    this.userPassword = SessionCash.getPassword();
+                } else {
+                    Client.out.print("Enter user name : ");
+                    this.userName = Client.in.readLine().trim();
+                    Client.out.print("Enter password : ");
+                    this.userPassword = Client.in.readLine(true).trim();
+                    if (this.userName.equals("")) return "Invalid user name";
+                    if (this.userPassword.equals("")) return "Password cannot be blank";
+                }
 
                 String[] newArgs = new String[2];
                 newArgs[0] = this.userName;
@@ -158,6 +164,7 @@ public class Invoker {
 
                 if (response.getResponse().equals("Login successful") || response.getResponse().equals("Registration successful")) {
                     isAuthed = true;
+                    SessionCash.saveSession(this.userName, this.userPassword);
                 } else {
                     this.userName = null;
                     this.userPassword = null;
