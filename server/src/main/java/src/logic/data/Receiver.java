@@ -29,13 +29,11 @@ public class Receiver {
     ReentrantLock reentrantLockOnWrite = new ReentrantLock();
     ReentrantLock reentrantLockOnRead = new ReentrantLock();
 
-    public Receiver(DBConnection dbConnection) throws FileNotFoundException {
+    public Receiver(DBConnection dbConnection) {
 
         this.dbConnection = dbConnection;
         CollectionLoader collectionLoader = new DBCollectionLoader(dbConnection);
         collection.addAll(collectionLoader.getCollection());
-
-        System.out.println(collection.size());
 
         db = new DBDataManager(dbConnection.getConnection());
     }

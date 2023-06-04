@@ -21,7 +21,7 @@ public class Authorization {
 
     private Connection connection;
 
-    public Authorization(Connection dbConnection) throws FileNotFoundException, SQLException {
+    public Authorization(Connection dbConnection) throws SQLException {
         try {
             this.connection = dbConnection;
             md5 = MessageDigest.getInstance("MD5");

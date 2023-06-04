@@ -100,7 +100,7 @@ public class DBDataManager implements DataManager<Dragon> {
         }
     }
 
-    public Long[] getCoorfinatesIDNPersonID(long dragonId) {
+    public Long[] getCoordinatesIDPPersonID(long dragonId) {
         Long[] resultList = new Long[2];
         // getting coordinates and killer ids
         try (
@@ -127,7 +127,7 @@ public class DBDataManager implements DataManager<Dragon> {
             Savepoint savepoint = dbConnection.setSavepoint();
 
             // getting coordinates and killer ids
-            Long[] coordinateAndPersonIds = getCoorfinatesIDNPersonID(dragonId);
+            Long[] coordinateAndPersonIds = getCoordinatesIDPPersonID(dragonId);
             Long coordinatesId = coordinateAndPersonIds[0];
             Long personId = coordinateAndPersonIds[1];
 
@@ -244,7 +244,7 @@ public class DBDataManager implements DataManager<Dragon> {
             Savepoint savepoint = dbConnection.setSavepoint();
             
             // getting coordinates and killer ids
-            Long[] coordinateAndPersonIds = getCoorfinatesIDNPersonID(dragonId);
+            Long[] coordinateAndPersonIds = getCoordinatesIDPPersonID(dragonId);
             Long coordinatesId = coordinateAndPersonIds[0];
             Long personId = coordinateAndPersonIds[1];
 

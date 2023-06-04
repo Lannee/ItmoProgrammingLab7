@@ -72,9 +72,7 @@ public class Server {
             logger.error("Unknown host.");
         } catch (SQLException e) {
             throw new RuntimeException(e);
-        } catch (FileNotFoundException e) {
-            throw new RuntimeException(e);
-        } 
+        }
 
         new Thread(() -> {
             String line;
@@ -136,19 +134,4 @@ public class Server {
             }
         }
     }
-
-    // public static String getFilePath(String[] args) {
-    //     // return "base.csv";
-
-    //     if (args.length == 0) {
-    //         logger.error("Incorrect number of arguments.");
-    //         System.exit(2);
-    //     }
-    //     String filePath = System.getenv().get(args[0]);
-    //     if (filePath == null) {
-    //         logger.error("Environment variable \"" + args[0] + "\" does not exist.");
-    //         System.exit(1);
-    //     }
-    //     return filePath;
-    // }
 }

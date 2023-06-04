@@ -178,7 +178,9 @@ public class Invoker {
                     this.userPassword = null;
                 }
 
-                return response.getResponse() + "\nWelcome, " + this.userName + "!";
+                return userName != null
+                        ?  response.getResponse() + "\nWelcome, " + this.userName + " !"
+                        : response.getResponse();
             default:
                 // If command is NON_ARGUMENT or LINE_ARGUMENT
                 response = sendRequestAndGetResponse(RequestFactory.createRequest(commandName, args, TypeOfRequest.CONFIRMATION, userName, userPassword));
