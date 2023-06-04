@@ -28,13 +28,13 @@ public class DBCollectionLoader implements CollectionLoader {
     public List<Dragon> getCollection() {
         List<Dragon> collection = new LinkedList<>();
 
-        try(Statement statement = connection.getConnection().createStatement()) {
+        try (Statement statement = connection.getConnection().createStatement()) {
             ResultSet rs = statement.executeQuery(initializationQuery);
             while (rs.next()) {
                 Dragon dragon = new Dragon();
                 dragon.setId(rs.getLong("id"));
                 dragon.setName(rs.getString("name"));
-                
+
                 rs.getInt("coordinatesid");
                 if (!rs.wasNull()) {
                     Coordinates coordinates = new Coordinates();
@@ -44,8 +44,16 @@ public class DBCollectionLoader implements CollectionLoader {
                 }
 
                 dragon.setCreationDate(rs.getObject("creationdate", OffsetDateTime.class).toZonedDateTime());
-                dragon.setAge(rs.getLong("age"));
-                dragon.setWingspan(rs.getLong("wingspan"));
+                Long dragonAge = rs.getLong("age");
+                if (dragonAge == 0)
+                    dragon.setAge(null);
+                else
+                    dragon.setAge(dragonAge);
+                Long dragonWingspan = rs.getLong("wingspan");
+                if (dragonAge == 0)
+                    dragon.setWingspan(null);
+                else
+                    dragon.setWingspan(dragonWingspan);
                 dragon.setWeight(rs.getFloat("weight"));
                 dragon.setColor(Color.valueOf(rs.getString("color")));
 

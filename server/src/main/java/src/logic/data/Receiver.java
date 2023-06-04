@@ -242,13 +242,9 @@ public class Receiver {
         return "Successfully";
     }
 
-    public String removeByIndex(int index, boolean showRemoved, int userId) {
+    public String removeByIndex(boolean showRemoved, int userId) {
         if (this.size() == 0) {
             return "Cannot remove since the collection is empty";
-        }
-
-        if (index >= this.size()) {
-            return "Cannot remove from collection: index is out of bound";
         }
 
         List<Long> dragonsCreatedByUser = this.getDragonUserCreated(userId);

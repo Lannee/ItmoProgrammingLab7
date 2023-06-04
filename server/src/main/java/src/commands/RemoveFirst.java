@@ -22,7 +22,7 @@ public class RemoveFirst implements Command {
     @Override
     public String execute(Object[] args, int userId) {
         checkArgsConformity(args);
-        return receiver.removeByIndex(0, false, userId);
+        return receiver.removeByIndex(false, userId);
     }
 
     @Override

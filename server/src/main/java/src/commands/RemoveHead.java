@@ -22,7 +22,7 @@ public class RemoveHead implements Command {
     @Override
     public String execute(Object[] args, int userId) {
         checkArgsConformity(args);
-        return receiver.removeByIndex(0, true, userId);
+        return receiver.removeByIndex(true, userId);
     }
 
     @Override
