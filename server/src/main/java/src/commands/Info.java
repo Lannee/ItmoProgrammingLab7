@@ -22,7 +22,7 @@ public class Info implements Command {
     @Override
     public String execute(Object[] args, int userId) throws IllegalArgumentException {
         checkArgsConformity(args);
-        return receiver.getInfo();
+        return receiver.getInfo(userId);
     }
 
     @Override

@@ -130,11 +130,16 @@ public class Receiver {
         return countRemoved;
     }
 
-    public String getInfo() {
+    public String getInfo(int userId) {
         reentrantLockOnRead.lock();
-        String result = db.getInfo();
+        StringBuilder result = new StringBuilder();
+        result.append("Stored type : ").append(getClT().getSimpleName()).append("\n");
+        result.append("Amount of elements : ").append(size()).append("\n");
+        String userName = db.getUserNameById(userId);
+        result.append("User name : ").append(userName != null ? userName : "Unknown").append("\n");
+        result.append("Items created by you : ").append(getDragonUserCreated(userId).size());
         reentrantLockOnRead.unlock();
-        return result;
+        return result.toString();
     }
 
     public String getFormattedCollection(Comparator<Dragon> sorter) {
