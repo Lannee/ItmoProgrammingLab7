@@ -328,7 +328,7 @@ public class Receiver {
         collection.forEach(action);
     }
 
-    private Dragon getDragonById(long id) {
+    public synchronized Dragon getDragonById(long id) {
         for (Dragon dragon : collection) {
             if (dragon.getId() == id)
                 return dragon;
