@@ -61,3 +61,8 @@ base.csv
 ##############################
 .pgpass
 server/src/main/resources/config.properties
+
+##############################
+## client cashes
+##############################
+client/cash/
