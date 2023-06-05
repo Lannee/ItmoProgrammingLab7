@@ -23,11 +23,6 @@ public class DBDataManager implements DataManager<Dragon> {
     }
 
     @Override
-    public String getInfo() {
-        return null;
-    }
-
-    @Override
     public boolean add(Dragon element, int userId) {
         try {
             dbConnection.setAutoCommit(false);
@@ -336,12 +331,6 @@ public class DBDataManager implements DataManager<Dragon> {
         }
     }
 
-    // public boolean dragonUserMatch(int userId, int dragonId) {
-    // try {
-    // PreparedStatement match = dbConnection.prepareStatement()
-    // }
-    // }
-
     public int getUserIdFromUserName(String userName) {
         int userId = 0;
         PreparedStatement match;
@@ -356,6 +345,20 @@ public class DBDataManager implements DataManager<Dragon> {
             e.printStackTrace();
         }
         return userId;
+    }
+
+    @Override
+    public String getUserNameById(int id) {
+        try {
+            PreparedStatement userNameStatement = dbConnection.prepareStatement(userNameById);
+            userNameStatement.setInt(1, id);
+            ResultSet resultSet = userNameStatement.executeQuery();
+            if(!resultSet.next()) return null;
+
+            return resultSet.getString(1);
+        } catch (SQLException e) {
+            return null;
+        }
     }
 
     @Override

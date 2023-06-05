@@ -81,11 +81,6 @@ public final class DBQueries {
                         WHERE id = ?;
                         """;
 
-        public static final String deleteUsersDragonByIds = """
-                        DELETE FROM users_dragon
-                        WHERE users = ? AND dragon = ?;
-                        """;
-
         public static final String getColorID = """
                         SELECT id
                         FROM color
@@ -103,5 +98,11 @@ public final class DBQueries {
 
         public static final String getDragonsCreatedByUser = """
                         SELECT dragon FROM users_dragon WHERE users = ?;
+                        """;
+
+        public static final String userNameById = """
+                        SELECT login
+                        FROM users
+                        WHERE id = ?;
                         """;
 }

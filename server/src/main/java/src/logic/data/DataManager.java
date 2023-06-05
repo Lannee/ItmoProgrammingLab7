@@ -10,10 +10,6 @@ import java.util.function.Consumer;
  * @param <T> - Stored type
  */
 public interface DataManager<T extends Comparable<? super T>> {
-    /**
-     * @return information about collection in string representation
-     */
-    String getInfo();
 
     /**
      * Adds element to the collection
@@ -80,11 +76,13 @@ public interface DataManager<T extends Comparable<? super T>> {
 
     int getUserIdFromUserName(String userName);
 
+    String getUserNameById(int id);
+
     List<Integer> getUsersIdCreatedDragon(long dragonId);
 
     List<Long> getDragonUserCreated(int userId);
 
-    public boolean removeDragon(long dragonId);
+    boolean removeDragon(long dragonId);
 
-    public boolean removeByIndex(long dragonId, int userId);
+    boolean removeByIndex(long dragonId, int userId);
 }
