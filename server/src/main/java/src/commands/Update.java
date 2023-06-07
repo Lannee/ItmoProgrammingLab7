@@ -30,7 +30,11 @@ public class Update implements Command {
 
         if (args.length == 2) {
             Object createdObject = args[1];
-            receiver.update(id, createdObject, userId);
+            if (receiver.getDragonById(id) != null) {
+                receiver.update(id, createdObject, userId);
+            } else {
+                return "You have removed dragon with typed ID before, unable to update.";
+            }
             return "Object with " + args()[0].getArgumentName() + " " + id + " was successfully updated";
         } else {
             return receiver.update(id, userId);
