@@ -161,7 +161,7 @@ public class Invoker {
                     this.userName = Client.in.readLine().trim();
                     Client.out.print("Enter password : ");
                     this.userPassword = Client.in.readLine(true).trim();
-                    if (this.userName.equals("")) return "Invalid user name";
+                    if (this.userName.equals("") || this.userName.length() > 50) return "Invalid user name";
                     if (this.userPassword.equals("")) return "Password cannot be blank";
                 }
 
