@@ -25,8 +25,7 @@ public class Receiver {
 
     private final DBConnection dbConnection;
 
-    ReentrantLock reentrantLockOnWrite = new ReentrantLock();
-    ReentrantLock reentrantLockOnRead = new ReentrantLock();
+    ReentrantLock lock = new ReentrantLock();
 
     public Receiver(DBConnection dbConnection) {
 
@@ -38,12 +37,12 @@ public class Receiver {
     }
 
     public void add(Object obj, int userId) {
-        reentrantLockOnWrite.lock();
+        lock.lock();
         try {
             if (db.add(getStoredType().cast(obj), userId))
                 collection.add(getStoredType().cast(obj));
         } finally {
-            reentrantLockOnWrite.unlock();
+            lock.unlock();
         }
     }
 
@@ -53,14 +52,14 @@ public class Receiver {
         if (!(newObject instanceof Dragon dragon))
             throw new ClassCastException();
 
-        reentrantLockOnWrite.lock();
+        lock.lock();
         try {
             if (db.update(id, dragon, userId)) {
                 collection.remove(dragon);
                 collection.add(dragon);
             }
         } finally {
-            reentrantLockOnWrite.unlock();
+            lock.unlock();
         }
     }
 
@@ -98,7 +97,7 @@ public class Receiver {
     }
 
     public void add(Object obj, long id, int userId) {
-        reentrantLockOnWrite.lock();
+        lock.lock();
         try {
             if (id <= 0)
                 throw new NumberFormatException("Incorrect argument value");
@@ -108,12 +107,12 @@ public class Receiver {
 
         } catch (NoSuchFieldException | IllegalArgumentException impossible) {
         } finally {
-            reentrantLockOnWrite.unlock();
+            lock.unlock();
         }
     }
 
     public boolean removeDragon(long dragonId, int userId) {
-        reentrantLockOnWrite.lock();
+        lock.lock();
         try {
             if (db.removeDragon(dragonId)) {
                 if (this.removeById(dragonId, userId)) {
@@ -121,13 +120,13 @@ public class Receiver {
                 }
             }
         } finally {
-            reentrantLockOnWrite.unlock();
+            lock.unlock();
         }
         return false;
     }
 
     public int clear(int userId) {
-        reentrantLockOnWrite.lock();
+        lock.lock();
         int countRemoved = 0;
         try {
             List<Long> removedDragons = db.clear(userId);
@@ -137,13 +136,13 @@ public class Receiver {
                 }
             }
         } finally {
-            reentrantLockOnWrite.unlock();
+            lock.unlock();
         }
         return countRemoved;
     }
 
     public String getInfo(int userId) {
-        reentrantLockOnRead.lock();
+        lock.lock();
         StringBuilder result = new StringBuilder();
         try {
             result.append("Stored type : ").append(getClT().getSimpleName()).append("\n");
@@ -152,29 +151,29 @@ public class Receiver {
             result.append("User name : ").append(userName != null ? userName : "Unknown").append("\n");
             result.append("Items created by you : ").append(getDragonUserCreated(userId).size());
         } finally {
-            reentrantLockOnRead.unlock();
+            lock.unlock();
         }
         return result.toString();
     }
 
     public String getFormattedCollection(Comparator<Dragon> sorter) {
-        reentrantLockOnRead.lock();
+        lock.lock();
         String result;
         try {
             result = Formatter.format(this.getElements(sorter), this.getClT());
         } finally {
-            reentrantLockOnRead.unlock();
+            lock.unlock();
         }
         return result;
     }
 
     public String getFormattedCollection() {
-        reentrantLockOnRead.lock();
+        lock.lock();
         String result;
         try {
             result = getFormattedCollection(Comparator.reverseOrder());
         } finally {
-            reentrantLockOnRead.unlock();
+            lock.unlock();
         }
         return result;
     }
@@ -182,7 +181,7 @@ public class Receiver {
     public <T> Integer countCompareToValueByField(String fieldName, Comparable value,
             Comparator<Comparable<T>> comparator)
             throws NumberFormatException, NoSuchFieldException {
-        reentrantLockOnRead.lock();
+        lock.lock();
         int counter = 0;
         try {
             Field field = this.getClT().getDeclaredField(fieldName);
@@ -200,7 +199,7 @@ public class Receiver {
                 }
             }
         } finally {
-            reentrantLockOnRead.unlock();
+            lock.unlock();
         }
         return counter;
     }
@@ -211,7 +210,7 @@ public class Receiver {
 
     public Dragon getElementByFieldValue(String fieldName, Object value)
             throws NumberFormatException, NoSuchFieldException {
-        reentrantLockOnRead.lock();
+        lock.lock();
         try {
             Field idField;
             idField = this.getClT().getDeclaredField(fieldName);
@@ -219,25 +218,25 @@ public class Receiver {
             for (Dragon e : this.getElements()) {
                 try {
                     if (idField.get(e).equals(value)) {
-                        reentrantLockOnRead.unlock();
+                        lock.unlock();
                         return e;
                     }
                 } catch (IllegalAccessException ex) {
                 }
             }
         } finally {
-            reentrantLockOnRead.unlock();
+            lock.unlock();
         }
         return null;
     }
 
     public Dragon getElementByIndex(int index) {
-        reentrantLockOnRead.lock();
+        lock.lock();
         Dragon result;
         try {
             result = this.get(index);
         } finally {
-            reentrantLockOnRead.unlock();
+            lock.unlock();
         }
         return result;
     }
@@ -247,18 +246,18 @@ public class Receiver {
         try {
             result = this.size();
         } finally {
-            reentrantLockOnRead.unlock();
+            lock.unlock();
         }
         return result;
     }
 
     public boolean removeFromCollection(Object o, int userId) {
-        reentrantLockOnWrite.lock();
+        lock.lock();
         boolean result;
         try {
             result = this.remove(o, userId);
         } finally {
-            reentrantLockOnWrite.unlock();
+            lock.unlock();
         }
         return result;
     }
@@ -267,7 +266,7 @@ public class Receiver {
         if (this.size() == 0) {
             return "Cannot remove since the collection is empty";
         }
-        reentrantLockOnWrite.lock();
+        lock.lock();
         try {
             List<Dragon> removed = new LinkedList<>();
             for (Dragon element : this.getElements()) {
@@ -281,11 +280,11 @@ public class Receiver {
 
             if (showRemoved) {
                 String result = Formatter.format(removed, this.getClT());
-                reentrantLockOnWrite.unlock();
+                lock.unlock();
                 return result;
             }
         } finally {
-            reentrantLockOnWrite.unlock();
+            lock.unlock();
         }
         return "Successfully";
     }
@@ -312,7 +311,7 @@ public class Receiver {
     }
 
     public Map<Object, Integer> groupByField(String fieldName) throws NoSuchFieldException {
-        reentrantLockOnRead.lock();
+        lock.lock();
         Map<Object, Integer> groups = new HashMap<>();
         try {
             Field field = this.getClT().getDeclaredField(fieldName);
@@ -330,7 +329,7 @@ public class Receiver {
                 }
             }
         } finally {
-            reentrantLockOnRead.unlock();
+            lock.unlock();
         }
         return groups;
     }
