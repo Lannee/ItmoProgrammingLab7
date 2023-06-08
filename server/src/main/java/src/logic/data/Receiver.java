@@ -39,9 +39,12 @@ public class Receiver {
 
     public void add(Object obj, int userId) {
         reentrantLockOnWrite.lock();
-        if (db.add(getStoredType().cast(obj), userId))
-            collection.add(getStoredType().cast(obj));
-        reentrantLockOnWrite.unlock();
+        try {
+            if (db.add(getStoredType().cast(obj), userId))
+                collection.add(getStoredType().cast(obj));
+        } finally {
+            reentrantLockOnWrite.unlock();
+        }
     }
 
     public void update(long id, Object newObject, int userId) {
@@ -51,12 +54,14 @@ public class Receiver {
             throw new ClassCastException();
 
         reentrantLockOnWrite.lock();
-        if (db.update(id, dragon, userId)) {
-            collection.remove(dragon);
-            collection.add(dragon);
+        try {
+            if (db.update(id, dragon, userId)) {
+                collection.remove(dragon);
+                collection.add(dragon);
+            }
+        } finally {
+            reentrantLockOnWrite.unlock();
         }
-
-        reentrantLockOnWrite.unlock();
     }
 
     public String update(long id, int userId) {
@@ -102,57 +107,75 @@ public class Receiver {
             db.add(getStoredType().cast(obj), userId);
 
         } catch (NoSuchFieldException | IllegalArgumentException impossible) {
+        } finally {
+            reentrantLockOnWrite.unlock();
         }
-        reentrantLockOnWrite.unlock();
     }
 
     public boolean removeDragon(long dragonId, int userId) {
         reentrantLockOnWrite.lock();
-        if (db.removeDragon(dragonId)) {
-            if (this.removeById(dragonId, userId)) {
-                return true;
+        try {
+            if (db.removeDragon(dragonId)) {
+                if (this.removeById(dragonId, userId)) {
+                    return true;
+                }
             }
+        } finally {
+            reentrantLockOnWrite.unlock();
         }
-        reentrantLockOnWrite.unlock();
         return false;
     }
 
     public int clear(int userId) {
         reentrantLockOnWrite.lock();
         int countRemoved = 0;
-        List<Long> removedDragons = db.clear(userId);
-        for (long dragonId : removedDragons) {
-            if (this.removeById(dragonId, userId)) {
-                countRemoved++;
+        try {
+            List<Long> removedDragons = db.clear(userId);
+            for (long dragonId : removedDragons) {
+                if (this.removeById(dragonId, userId)) {
+                    countRemoved++;
+                }
             }
+        } finally {
+            reentrantLockOnWrite.unlock();
         }
-        reentrantLockOnWrite.unlock();
         return countRemoved;
     }
 
     public String getInfo(int userId) {
         reentrantLockOnRead.lock();
         StringBuilder result = new StringBuilder();
-        result.append("Stored type : ").append(getClT().getSimpleName()).append("\n");
-        result.append("Amount of elements : ").append(size()).append("\n");
-        String userName = db.getUserNameById(userId);
-        result.append("User name : ").append(userName != null ? userName : "Unknown").append("\n");
-        result.append("Items created by you : ").append(getDragonUserCreated(userId).size());
-        reentrantLockOnRead.unlock();
+        try {
+            result.append("Stored type : ").append(getClT().getSimpleName()).append("\n");
+            result.append("Amount of elements : ").append(size()).append("\n");
+            String userName = db.getUserNameById(userId);
+            result.append("User name : ").append(userName != null ? userName : "Unknown").append("\n");
+            result.append("Items created by you : ").append(getDragonUserCreated(userId).size());
+        } finally {
+            reentrantLockOnRead.unlock();
+        }
         return result.toString();
     }
 
     public String getFormattedCollection(Comparator<Dragon> sorter) {
         reentrantLockOnRead.lock();
-        String result = Formatter.format(this.getElements(sorter), this.getClT());
-        reentrantLockOnRead.unlock();
+        String result;
+        try {
+            result = Formatter.format(this.getElements(sorter), this.getClT());
+        } finally {
+            reentrantLockOnRead.unlock();
+        }
         return result;
     }
 
     public String getFormattedCollection() {
         reentrantLockOnRead.lock();
-        String result = getFormattedCollection(Comparator.reverseOrder());
-        reentrantLockOnRead.unlock();
+        String result;
+        try {
+            result = getFormattedCollection(Comparator.reverseOrder());
+        } finally {
+            reentrantLockOnRead.unlock();
+        }
         return result;
     }
 
@@ -161,21 +184,24 @@ public class Receiver {
             throws NumberFormatException, NoSuchFieldException {
         reentrantLockOnRead.lock();
         int counter = 0;
-        Field field = this.getClT().getDeclaredField(fieldName);
-        field.setAccessible(true);
-        // Comparable givenValue = (Comparable)
-        // StringConverter.methodForType.get(field.getType()).apply(value);
-        if (!ObjectUtils.checkValueForRestrictions(field, value)) {
-            throw new NumberFormatException();
-        }
-        for (Object element : this.getElements()) {
-            try {
-                if (comparator.compare(value, (Comparable) field.get(element)) > 0)
-                    counter++;
-            } catch (IllegalAccessException impossible) {
+        try {
+            Field field = this.getClT().getDeclaredField(fieldName);
+            field.setAccessible(true);
+            // Comparable givenValue = (Comparable)
+            // StringConverter.methodForType.get(field.getType()).apply(value);
+            if (!ObjectUtils.checkValueForRestrictions(field, value)) {
+                throw new NumberFormatException();
             }
+            for (Object element : this.getElements()) {
+                try {
+                    if (comparator.compare(value, (Comparable) field.get(element)) > 0)
+                        counter++;
+                } catch (IllegalAccessException impossible) {
+                }
+            }
+        } finally {
+            reentrantLockOnRead.unlock();
         }
-        reentrantLockOnRead.unlock();
         return counter;
     }
 
@@ -183,42 +209,57 @@ public class Receiver {
 
     }
 
-    public synchronized Dragon getElementByFieldValue(String fieldName, Object value)
+    public Dragon getElementByFieldValue(String fieldName, Object value)
             throws NumberFormatException, NoSuchFieldException {
         reentrantLockOnRead.lock();
-        Field idField;
-        idField = this.getClT().getDeclaredField(fieldName);
-        idField.setAccessible(true);
-        for (Dragon e : this.getElements()) {
-            try {
-                if (idField.get(e).equals(value)) {
-                    reentrantLockOnRead.unlock();
-                    return e;
+        try {
+            Field idField;
+            idField = this.getClT().getDeclaredField(fieldName);
+            idField.setAccessible(true);
+            for (Dragon e : this.getElements()) {
+                try {
+                    if (idField.get(e).equals(value)) {
+                        reentrantLockOnRead.unlock();
+                        return e;
+                    }
+                } catch (IllegalAccessException ex) {
                 }
-            } catch (IllegalAccessException ex) {
             }
+        } finally {
+            reentrantLockOnRead.unlock();
         }
-        reentrantLockOnRead.unlock();
         return null;
     }
 
     public Dragon getElementByIndex(int index) {
         reentrantLockOnRead.lock();
-        Dragon result = this.get(index);
-        reentrantLockOnRead.unlock();
+        Dragon result;
+        try {
+            result = this.get(index);
+        } finally {
+            reentrantLockOnRead.unlock();
+        }
         return result;
     }
 
     public int collectionSize() {
-        reentrantLockOnRead.unlock();
-        int result = this.size();
+        int result;
+        try {
+            result = this.size();
+        } finally {
+            reentrantLockOnRead.unlock();
+        }
         return result;
     }
 
     public boolean removeFromCollection(Object o, int userId) {
         reentrantLockOnWrite.lock();
-        boolean result = this.remove(o, userId);
-        reentrantLockOnWrite.unlock();
+        boolean result;
+        try {
+            result = this.remove(o, userId);
+        } finally {
+            reentrantLockOnWrite.unlock();
+        }
         return result;
     }
 
@@ -227,23 +268,25 @@ public class Receiver {
             return "Cannot remove since the collection is empty";
         }
         reentrantLockOnWrite.lock();
-        List<Dragon> removed = new LinkedList<>();
-        for (Dragon element : this.getElements()) {
-            if (filter.test(element)) {
-                if (db.removeByIndex(element.getId(), userId)) {
-                    removed.add(element);
-                    removeFromCollection(element, userId);
+        try {
+            List<Dragon> removed = new LinkedList<>();
+            for (Dragon element : this.getElements()) {
+                if (filter.test(element)) {
+                    if (db.removeByIndex(element.getId(), userId)) {
+                        removed.add(element);
+                        removeFromCollection(element, userId);
+                    }
                 }
             }
-        }
 
-        if (showRemoved) {
-            String result = Formatter.format(removed, this.getClT());
+            if (showRemoved) {
+                String result = Formatter.format(removed, this.getClT());
+                reentrantLockOnWrite.unlock();
+                return result;
+            }
+        } finally {
             reentrantLockOnWrite.unlock();
-            return result;
         }
-        reentrantLockOnWrite.unlock();
-
         return "Successfully";
     }
 
@@ -271,21 +314,24 @@ public class Receiver {
     public Map<Object, Integer> groupByField(String fieldName) throws NoSuchFieldException {
         reentrantLockOnRead.lock();
         Map<Object, Integer> groups = new HashMap<>();
-        Field field = this.getClT().getDeclaredField(fieldName);
-        field.setAccessible(true);
-        for (Object element : this.getElements()) {
-            try {
-                Object key = field.get(element);
-                if (groups.containsKey(key)) {
-                    Integer value = groups.get(key);
-                    groups.put(key, ++value);
-                } else {
-                    groups.put(key, 1);
+        try {
+            Field field = this.getClT().getDeclaredField(fieldName);
+            field.setAccessible(true);
+            for (Object element : this.getElements()) {
+                try {
+                    Object key = field.get(element);
+                    if (groups.containsKey(key)) {
+                        Integer value = groups.get(key);
+                        groups.put(key, ++value);
+                    } else {
+                        groups.put(key, 1);
+                    }
+                } catch (IllegalAccessException impossible) {
                 }
-            } catch (IllegalAccessException impossible) {
             }
+        } finally {
+            reentrantLockOnRead.unlock();
         }
-        reentrantLockOnRead.unlock();
         return groups;
     }
 
