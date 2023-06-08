@@ -9,7 +9,7 @@ public class PGParser {
     private String userName;
     private String password;
 
-    public PGParser(String filePath) throws FileNotFoundException, FileFormatException {
+    public PGParser(String filePath) throws IOException {
         try(BufferedReader reader = new BufferedReader(
                 new InputStreamReader(
                         new FileInputStream(filePath)))) {
@@ -19,11 +19,6 @@ public class PGParser {
 
             userName = elements[3];
             password = elements[4];
-
-        } catch (IOException e) {
-            if(e instanceof FileNotFoundException)
-                throw new FileNotFoundException(e.getMessage());
-            throw new RuntimeException(e);
         }
     }
 

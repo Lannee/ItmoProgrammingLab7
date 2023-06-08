@@ -2,6 +2,8 @@ package src.authorization;
 
 import module.connection.responseModule.LoginStatus;
 import module.connection.responseModule.RegistrationStatus;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
@@ -16,6 +18,7 @@ import static src.authorization.AuthorizationQueries.*;
 public class Authorization {
 
     private static final String pepper = "]8~h/+$>";
+    private static final Logger logger = LoggerFactory.getLogger(Authorization.class);
 
     private static MessageDigest md5;
 
@@ -25,8 +28,8 @@ public class Authorization {
         try {
             this.connection = dbConnection;
             md5 = MessageDigest.getInstance("MD5");
-        } catch (NoSuchAlgorithmException ignored) {
-            throw new RuntimeException();
+        } catch (NoSuchAlgorithmException e) {
+            logger.error(e.getMessage());
         }
     }
 
@@ -37,15 +40,15 @@ public class Authorization {
             ResultSet result = userStatement.executeQuery();
             return result.next();
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
             return false;
         }
     }
 
     public LoginStatus loginUser(String user, String password) {
-        byte[] passwordHash = getPasswordHash(getSalt(user), password);
-
         try {
+            byte[] passwordHash = getPasswordHash(getSalt(user), password);
+
             PreparedStatement loggingStatement = connection.prepareStatement(passwordConfirmation);
             loggingStatement.setString(1, user);
             loggingStatement.setBytes(2, passwordHash);
@@ -53,24 +56,19 @@ public class Authorization {
             System.out.println("login user done");
             return isLoginSuccessfully.next() ? LoginStatus.SUCCESSFUL : LoginStatus.INVALID_PASSWORD;
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
             return LoginStatus.FAILED;
         }
     }
 
-    private byte[] getSalt(String user) {
-        try {
-            PreparedStatement saltStatement = connection.prepareStatement(getSalt);
-            saltStatement.setString(1, user);
-            ResultSet saltRS = saltStatement.executeQuery();
-            if (saltRS.next()) {
-                return saltRS.getBytes(1);
-            } else {
-                throw new SQLException("User does not exist");
-            }
-
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
+    private byte[] getSalt(String user) throws SQLException {
+        PreparedStatement saltStatement = connection.prepareStatement(getSalt);
+        saltStatement.setString(1, user);
+        ResultSet saltRS = saltStatement.executeQuery();
+        if (saltRS.next()) {
+            return saltRS.getBytes(1);
+        } else {
+            throw new SQLException("User does not exist");
         }
     }
 
@@ -106,7 +104,7 @@ public class Authorization {
             }
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
             return RegistrationStatus.FAILED;
         }
     }

@@ -4,6 +4,8 @@ import module.stored.Color;
 import module.stored.Coordinates;
 import module.stored.Dragon;
 import module.stored.Person;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import src.logic.data.CollectionLoader;
 
 import java.sql.ResultSet;
@@ -17,6 +19,8 @@ import java.util.List;
 import static src.logic.data.db.DBQueries.initializationQuery;
 
 public class DBCollectionLoader implements CollectionLoader {
+
+    private static final Logger logger = LoggerFactory.getLogger(DBCollectionLoader.class);
 
     private final DBConnection connection;
 
@@ -73,8 +77,7 @@ public class DBCollectionLoader implements CollectionLoader {
             }
 
         } catch (SQLException e) {
-            e.printStackTrace();
-            throw new RuntimeException(e);
+            logger.error(e.getMessage());
         }
         return collection;
     }

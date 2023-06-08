@@ -101,7 +101,7 @@ public class DatagramConnection implements IConnection {
                 socket.send(datagramPacket);
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
         }
     }
 
@@ -114,7 +114,7 @@ public class DatagramConnection implements IConnection {
             clientHost = datagramPacket.getAddress();
             clientPort = datagramPacket.getPort();
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
         }
         return bytes;
     }

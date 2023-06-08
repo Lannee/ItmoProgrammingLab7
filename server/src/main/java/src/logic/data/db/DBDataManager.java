@@ -91,8 +91,8 @@ public class DBDataManager implements DataManager<Dragon> {
                 throw new SQLException(e);
             }
         } catch (SQLException e) {
-            e.printStackTrace();
-            throw new RuntimeException(e);
+            logger.error(e.getMessage());
+            return false;
         }
     }
 
@@ -111,7 +111,7 @@ public class DBDataManager implements DataManager<Dragon> {
             resultList[0] = coordinatesId;
             resultList[1] = personId;
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
         }
         return resultList;
     }
@@ -210,8 +210,8 @@ public class DBDataManager implements DataManager<Dragon> {
             }
 
         } catch (SQLException e) {
-            e.printStackTrace();
-            throw new RuntimeException(e);
+            logger.error(e.getMessage());
+            return false;
         }
     }
 
@@ -259,7 +259,7 @@ public class DBDataManager implements DataManager<Dragon> {
                 deleteDragon.executeUpdate();
             } catch (SQLException e) {
                 dbConnection.rollback(savepoint);
-                e.printStackTrace();
+                logger.error(e.getMessage());
                 return false;
             }
 
@@ -270,7 +270,7 @@ public class DBDataManager implements DataManager<Dragon> {
                     deletePerson.executeUpdate();
                 } catch (SQLException e) {
                     dbConnection.rollback(savepoint);
-                    e.printStackTrace();
+                    logger.error(e.getMessage());
                     return false;
                 }
             }
@@ -281,12 +281,12 @@ public class DBDataManager implements DataManager<Dragon> {
                 deleteCoordinates.executeUpdate();
             } catch (SQLException e) {
                 dbConnection.rollback(savepoint);
-                e.printStackTrace();
+                logger.error(e.getMessage());
                 return false;
             }
             dbConnection.commit();
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
             return false;
         }
         return true;
@@ -316,7 +316,7 @@ public class DBDataManager implements DataManager<Dragon> {
             rs1.next();
             return rs1.getLong(1);
         } else {
-            return Long.valueOf(0);
+            return 0L;
         }
     }
 
@@ -327,7 +327,7 @@ public class DBDataManager implements DataManager<Dragon> {
             commitAddStatement.setInt(2, dragonId);
             System.out.println("Изменено строк в базе данных " + commitAddStatement.executeUpdate());
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            logger.error(e.getMessage());
         }
     }
 
@@ -342,7 +342,7 @@ public class DBDataManager implements DataManager<Dragon> {
                 userId = resultSet.getInt("id");
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
         }
         return userId;
     }
@@ -357,6 +357,7 @@ public class DBDataManager implements DataManager<Dragon> {
 
             return resultSet.getString(1);
         } catch (SQLException e) {
+            logger.error(e.getMessage());
             return null;
         }
     }
@@ -372,7 +373,7 @@ public class DBDataManager implements DataManager<Dragon> {
                 resultListDragonId.add(rs.getInt("users"));
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
         }
         return resultListDragonId;
     }
@@ -388,7 +389,7 @@ public class DBDataManager implements DataManager<Dragon> {
                 resultListDragonId.add(rs.getLong("dragon"));
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
         }
         return resultListDragonId;
     }

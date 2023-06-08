@@ -69,7 +69,6 @@ public class Server {
             running = false;
             logger.error("Unknown host.");
         } catch (SQLException e) {
-            e.printStackTrace();
             logger.error(e.getMessage());
             return;
         }
@@ -125,16 +124,11 @@ public class Server {
                         Response response;
                         response = new CommandsDescriptionResponse(invoker.getAuthenticatedCommandsDescriptions(),
                                 invoker.getNonAuthenticatedCommandsDescription());
-//                        if (request.getUserName() == null) {
-//                            response = new CommandsDescriptionResponse(invoker.getNonAuthenticatedCommandsDescription());
-//                        } else {
-//                            response = new CommandsDescriptionResponse(invoker.getAuthenticatedCommandsDescriptions());
-//                        }
                         connection.send(clientHost, clientPort, response);
                     }
                 }
             } catch (InterruptedException | ExecutionException e) {
-                e.printStackTrace();
+                logger.error(e.getMessage());
             }
         }
     }

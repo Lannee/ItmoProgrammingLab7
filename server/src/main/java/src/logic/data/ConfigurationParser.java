@@ -1,11 +1,15 @@
 package src.logic.data;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import src.utils.PGParser;
 
 import java.io.*;
 import java.util.Properties;
 
 public class ConfigurationParser {
+
+    private static final Logger logger = LoggerFactory.getLogger(ConfigurationParser.class);
 
     private String dbURL = "jdbc:postgresql://localhost:5432/postgres";
     private String password = "password";
@@ -33,7 +37,7 @@ public class ConfigurationParser {
                 password = props.getProperty("user_password");
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
         }
     }
 

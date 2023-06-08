@@ -1,12 +1,15 @@
 package src.logic.data.db;
 
-import org.postgresql.Driver;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
 public class DBConnection {
+
+    private static final Logger logger = LoggerFactory.getLogger(DBConnection.class);
 
     private Connection connection;
 
@@ -15,7 +18,7 @@ public class DBConnection {
             Class.forName("org.postgresql.Driver");
             connection = DriverManager.getConnection(dbURL, userName, password);
         } catch (ClassNotFoundException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
         }
     }
 
