@@ -218,7 +218,7 @@ public class Receiver {
             for (Dragon e : this.getElements()) {
                 try {
                     if (idField.get(e).equals(value)) {
-                        lock.unlock();
+//                        lock.unlock();
                         return e;
                     }
                 } catch (IllegalAccessException ex) {
