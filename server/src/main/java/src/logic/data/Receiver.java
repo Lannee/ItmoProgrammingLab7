@@ -218,7 +218,6 @@ public class Receiver {
             for (Dragon e : this.getElements()) {
                 try {
                     if (idField.get(e).equals(value)) {
-//                        lock.unlock();
                         return e;
                     }
                 } catch (IllegalAccessException ex) {
@@ -280,7 +279,6 @@ public class Receiver {
 
             if (showRemoved) {
                 String result = Formatter.format(removed, this.getClT());
-                lock.unlock();
                 return result;
             }
         } finally {
