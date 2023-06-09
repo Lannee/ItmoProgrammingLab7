@@ -1,0 +1,25 @@
+add
+dragon1
+12
+1
+
+
+12.4
+red
+y
+killer
+2012-01-21
+13
+efrwagethrnybtr
+
+execute_script D:\Egor\itmo\year1\programming\lab5\lab5\script.txt
+
+show
+clear
+clear
+clear
+clear
+show 
+cum
+cmu
+

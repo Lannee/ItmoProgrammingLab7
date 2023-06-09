@@ -73,6 +73,7 @@ public class Client {
                 try {
                     out.print(invite + " ");
                     line = in.readLine();
+                    out.print(line.trim().equals("") ? "\n" : "");
                     logger.info("User typed: '{}'", line.trim());
                     try {
                         String commandResult = invoker.parseCommand(line);

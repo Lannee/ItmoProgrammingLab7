@@ -104,13 +104,16 @@ public class Invoker {
         }
     }
 
-    public String formRequestAndGetResponse(String commandName, Object[] args, CommandDescription commandDescription,  String userName, String userPassword) throws NullPointerException {
+    public String formRequestAndGetResponse(String commandName, Object[] args, CommandDescription commandDescription,
+            String userName, String userPassword) throws NullPointerException {
         CommandResponse response;
         switch (commandDescription.getCommandType()) {
             case LINE_AND_OBJECT_ARGUMENT_COMMAND:
-                response = sendRequestAndGetResponse(RequestFactory.createRequest(commandName, args, TypeOfRequest.CONFIRMATION, userName, userPassword));
-                logger.info("Response with status '{}' received. Message - '{}'", response.getResponseStatus(), response.getResponse());
-                if(response.getResponseStatus() == ResponseStatus.CONNECTION_REJECTED) {
+                response = sendRequestAndGetResponse(RequestFactory.createRequest(commandName, args,
+                        TypeOfRequest.CONFIRMATION, userName, userPassword));
+                logger.info("Response with status '{}' received. Message - '{}'", response.getResponseStatus(),
+                        response.getResponse());
+                if (response.getResponseStatus() == ResponseStatus.CONNECTION_REJECTED) {
                     return "Connection rejected. Server is working with another user";
                 }
                 if (response.getResponseStatus() != ResponseStatus.WAITING) {
@@ -118,16 +121,17 @@ public class Invoker {
                 }
             case OBJECT_ARGUMENT_COMMAND:
                 // Getting array of arguments of command
-                CommandArgument[] objectArguments = Arrays.stream(commandDescription.getArguments()).
-                        filter(e -> !e.isEnteredByUser()).
-                        toArray(CommandArgument[]::new);
+                CommandArgument[] objectArguments = Arrays.stream(commandDescription.getArguments())
+                        .filter(e -> !e.isEnteredByUser()).toArray(CommandArgument[]::new);
 
-                for(CommandArgument objectArgument : objectArguments) {
+                for (CommandArgument objectArgument : objectArguments) {
                     try {
                         args = addArgument(args, caller.getObjectArgument(objectArgument.getArgumentType()));
-                        response = sendRequestAndGetResponse(RequestFactory.createRequest(commandName, args, TypeOfRequest.CONFIRMATION, userName, userPassword));
-                        logger.info("Response with status '{}' received. Message - '{}'", response.getResponseStatus(), response.getResponse());
-                        if(response.getResponseStatus() == ResponseStatus.CONNECTION_REJECTED) {
+                        response = sendRequestAndGetResponse(RequestFactory.createRequest(commandName, args,
+                                TypeOfRequest.CONFIRMATION, userName, userPassword));
+                        logger.info("Response with status '{}' received. Message - '{}'", response.getResponseStatus(),
+                                response.getResponse());
+                        if (response.getResponseStatus() == ResponseStatus.CONNECTION_REJECTED) {
                             return "Connection rejected. Server is working with another user";
                         }
                         if (response.getResponseStatus() != ResponseStatus.WAITING) {
@@ -135,11 +139,12 @@ public class Invoker {
                         }
                     } catch (CannotCreateObjectException e) {
                         logger.error("Cannot create object as argument to command with its type.");
-//                        return "Error with creating object as argument to command.";
+                        // return "Error with creating object as argument to command.";
                         return e.getMessage();
                     }
                 }
-                response = sendRequestAndGetResponse(RequestFactory.createRequest(commandName, args, TypeOfRequest.CONFIRMATION, userName, userPassword));
+                response = sendRequestAndGetResponse(RequestFactory.createRequest(commandName, args,
+                        TypeOfRequest.CONFIRMATION, userName, userPassword));
                 return response.getResponse();
 
             case SCRIPT_ARGUMENT_COMMAND:
@@ -151,26 +156,30 @@ public class Invoker {
                 SessionCash.clearCash();
                 return "You have successfully logged out";
             case LOG_IN_COMMAND:
-                if(SessionCash.loadState()) {
+                if (SessionCash.loadState()) {
                     this.userName = SessionCash.getUserName();
                     this.userPassword = SessionCash.getPassword();
                 }
             case AUTHENTICATION_COMMAND:
-                if(this.userName == null && this.userPassword == null) {
+                if (this.userName == null && this.userPassword == null) {
                     Client.out.print("Enter user name : ");
                     this.userName = Client.in.readLine().trim();
                     Client.out.print("Enter password : ");
                     this.userPassword = Client.in.readLine(true).trim();
-                    if (this.userName.equals("") || this.userName.length() > 50) return "Invalid user name";
-                    if (this.userPassword.equals("")) return "Password cannot be blank";
+                    if (this.userName.equals("") || this.userName.length() > 50)
+                        return "Invalid user name";
+                    if (this.userPassword.equals(""))
+                        return "Password cannot be blank";
                 }
 
                 String[] newArgs = new String[2];
                 newArgs[0] = this.userName;
                 newArgs[1] = this.userPassword;
-                response = sendRequestAndGetResponse(RequestFactory.createRequest(commandName, newArgs, TypeOfRequest.CONFIRMATION, null, null));
+                response = sendRequestAndGetResponse(
+                        RequestFactory.createRequest(commandName, newArgs, TypeOfRequest.CONFIRMATION, null, null));
 
-                if (response.getResponse().equals("Login successful") || response.getResponse().equals("Registration successful")) {
+                if (response.getResponse().equals("Login successful")
+                        || response.getResponse().equals("Registration successful")) {
                     isAuthed = true;
                     SessionCash.saveSession(this.userName, this.userPassword);
                 } else {
@@ -180,13 +189,15 @@ public class Invoker {
                 }
 
                 return this.userName != null
-                        ?  response.getResponse() + "\nWelcome, " + this.userName + " !"
+                        ? response.getResponse() + "\nWelcome, " + this.userName + " !"
                         : response.getResponse();
             default:
                 // If command is NON_ARGUMENT or LINE_ARGUMENT
-                response = sendRequestAndGetResponse(RequestFactory.createRequest(commandName, args, TypeOfRequest.CONFIRMATION, userName, userPassword));
-                logger.info("Response with status '{}' received. Message - '{}'", response.getResponseStatus(), response.getResponse());
-                if(response.getResponseStatus() == ResponseStatus.CONNECTION_REJECTED) {
+                response = sendRequestAndGetResponse(RequestFactory.createRequest(commandName, args,
+                        TypeOfRequest.CONFIRMATION, userName, userPassword));
+                logger.info("Response with status '{}' received. Message - '{}'", response.getResponseStatus(),
+                        response.getResponse());
+                if (response.getResponseStatus() == ResponseStatus.CONNECTION_REJECTED) {
                     return "Connection rejected. Server is working with another user";
                 }
                 return response.getResponse();
