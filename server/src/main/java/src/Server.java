@@ -106,10 +106,15 @@ public class Server {
                 switch (request.getTypeOfRequest()) {
                     case COMMAND, CONFIRMATION -> {
                         executorServiceForExecutingCommands.submit(() -> {
-                            LoginStatus loginStatus = authorization.loginUser(request.getUserName(), request.getUserPassword());
-                            String result = loginStatus.equals(LoginStatus.SUCCESSFUL)
-                                    ? invoker.parseRequest(request)
-                                    : loginStatus.getDescription();
+                            String result;
+                            if(request.getUserName() != null) {
+                                LoginStatus loginStatus = authorization.loginUser(request.getUserName(), request.getUserPassword());
+                                result = loginStatus.equals(LoginStatus.SUCCESSFUL)
+                                        ? invoker.parseRequest(request)
+                                        : loginStatus.getDescription();
+                            } else {
+                                result = invoker.parseRequest(request);
+                            }
 
                             if (result.equals("WAITING")) {
                                 connection.send(clientHost, clientPort,
