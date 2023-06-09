@@ -28,7 +28,7 @@ public class GroupCountingById implements Command {
         try {
             Map<Object, Integer> groups = receiver.groupByField("id");
             groups.forEach((u, v) -> result.append(u).append(" : ").append(v).append("\n"));
-            result.deleteCharAt(result.length() - 1);
+            if (groups.size() != 0) result.delete(result.toString().length() - 1, result.toString().length());
         } catch (NoSuchFieldException e) {
             return "Stored type does not support this command";
         }
