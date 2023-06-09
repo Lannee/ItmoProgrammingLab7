@@ -284,9 +284,12 @@ public class Invoker {
 
         } catch (IOException e) {
             return "Command cannot be executed: file " + file + " does not exist";
-            // Client.out.print("Command cannot be executed: file " + file + " does not
-            // exist.\n");
         }
         return "";
     }
+
+    public void clearFiles() {
+        files.clear();
+    }
+
 }
